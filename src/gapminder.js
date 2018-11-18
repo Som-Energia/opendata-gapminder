@@ -5,11 +5,8 @@ var m = require('mithril');
 const _ = require('./translate');
 
 const GapMinder = {};
-GapMinder.onupdate = function(vn) {
-	return this.oncreate(vn);
-};
 GapMinder.oncreate = function(vn) {
-	console.log("GapMinder::init", vn.dom);
+
 	// Various accessors that specify the four dimensions of data to visualize.
 	function x(d) { return d.income; }
 	function y(d) { return d.lifeExpectancy; }
@@ -116,11 +113,15 @@ GapMinder.oncreate = function(vn) {
 			.on("mouseover", enableInteraction);
 
 		// Start a transition that interpolates the data based on year.
-		view.transition()
-			.duration(30000)
-			.ease(d3.easeLinear)
-			.tween("year", tweenYear)
-			.each("end", enableInteraction);
+		function play() {
+			console.log("play");
+			view.transition()
+				.duration(30000)
+				.ease(d3.easeLinear)
+				.tween("year", tweenYear)
+				.each("end", play);
+		}
+		play();
 
 		// Positions the dots based on data.
 		function position(dot) {
