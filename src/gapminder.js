@@ -2,6 +2,7 @@
 
 var d3 = require('d3');
 var m = require('mithril');
+const _ = require('./translate');
 
 const GapMinder = {};
 GapMinder.onupdate = function(vn) {
@@ -56,7 +57,7 @@ GapMinder.oncreate = function(vn) {
 		.attr("text-anchor", "end")
 		.attr("x", width)
 		.attr("y", height - 6)
-		.text("income per capita, inflation-adjusted (dollars)");
+		.text(vn.attrs.xlabel);
 
 	// Add a y-axis label.
 	view.append("text")
@@ -65,7 +66,7 @@ GapMinder.oncreate = function(vn) {
 		.attr("y", 6)
 		.attr("dy", ".75em")
 		.attr("transform", "rotate(-90)")
-		.text("life expectancy (years)");
+		.text(vn.attrs.ylabel);
 
 	// Add the year label; the value is set on transition.
 	var label = view.append("text")
@@ -212,6 +213,8 @@ GapMinder.view = function(vn) {
 GapMinder.Example = {};
 GapMinder.Example.view = function(vn) {
 	return m(GapMinder, {
+		xlabel: _("Personas Socias"),
+		ylabel: _("Contratos"),
 		style: {
 			height: '806px',
 			width: '98%',
