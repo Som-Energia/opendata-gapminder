@@ -118,7 +118,7 @@ GapMinder.oncreate = function(vn) {
 		// Start a transition that interpolates the data based on year.
 		view.transition()
 			.duration(30000)
-			.ease("linear")
+			.ease(d3.easeLinear)
 			.tween("year", tweenYear)
 			.each("end", enableInteraction);
 
