@@ -11,40 +11,44 @@ function color(d) { return d.region; }
 function key(d) { return d.name; }
 
 // Chart dimensions.
-var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5},
-    width = 960 - margin.right,
-    height = 500 - margin.top - margin.bottom;
+var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5};
+var width = 960 - margin.right;
+var height = 500 - margin.top - margin.bottom;
 
 // Various scales. These domains make assumptions of data, naturally.
-var xScale = d3.scaleLog().domain([300, 1e5]).range([0, width]),
-    yScale = d3.scaleLinear().domain([10, 85]).range([height, 0]),
-    radiusScale = d3.scaleSqrt().domain([0, 5e8]).range([0, 40]),
-    colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+var xScale = d3.scaleLog().domain([300, 1e5]).range([0, width]);
+var yScale = d3.scaleLinear().domain([10, 85]).range([height, 0]);
+var radiusScale = d3.scaleSqrt().domain([0, 5e8]).range([0, 40]);
+var colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
 // The x & y axes.
-var xAxis = d3.axisBottom().scale(xScale).ticks(12, d3.format(",d")),
-    yAxis = d3.axisLeft().scale(yScale);
+var xAxis = d3.axisBottom().scale(xScale).ticks(12, d3.format(",d"));
+var yAxis = d3.axisLeft().scale(yScale);
 
 // Create the SVG container and set the origin.
-var svg = d3.select("#chart").append("svg")
+var svg = d3.select("#chart")
+  .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 // Add the x-axis.
-svg.append("g")
+svg
+  .append("g")
     .attr("class", "x axis")
     .attr("transform", "translate(0," + height + ")")
     .call(xAxis);
 
 // Add the y-axis.
-svg.append("g")
+svg
+  .append("g")
     .attr("class", "y axis")
     .call(yAxis);
 
 // Add an x-axis label.
-svg.append("text")
+svg
+  .append("text")
     .attr("class", "x label")
     .attr("text-anchor", "end")
     .attr("x", width)
@@ -52,7 +56,8 @@ svg.append("text")
     .text("income per capita, inflation-adjusted (dollars)");
 
 // Add a y-axis label.
-svg.append("text")
+svg
+  .append("text")
     .attr("class", "y label")
     .attr("text-anchor", "end")
     .attr("y", 6)
@@ -61,7 +66,8 @@ svg.append("text")
     .text("life expectancy (years)");
 
 // Add the year label; the value is set on transition.
-var label = svg.append("text")
+var label = svg
+  .append("text")
     .attr("class", "year label")
     .attr("text-anchor", "end")
     .attr("y", height - 24)
