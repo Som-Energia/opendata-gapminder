@@ -23,9 +23,9 @@ GapMinder.oncreate = function(vn) {
 	var height = 500 - margin.top - margin.bottom;
 
 	// Various scales. These domains make assumptions of data, naturally.
-	var xScale = d3.scaleLog().domain([300, 1e5]).range([0, width]);
-	var yScale = d3.scaleLinear().domain([10, 85]).range([height, 0]);
-	var radiusScale = d3.scaleSqrt().domain([0, 5e8]).range([0, 40]);
+	var xScale = d3.scaleLog().domain([vn.attrs.xmin, vn.attrs.xmax]).range([0, width]);
+	var yScale = d3.scaleLinear().domain([vn.attrs.ymin, vn.attrs.ymax]).range([height, 0]);
+	var radiusScale = d3.scaleSqrt().domain([vn.attrs.rmin, vn.attrs.rmax]).range([0, 40]);
 	var colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
 	// The x & y axes.
@@ -80,9 +80,7 @@ GapMinder.oncreate = function(vn) {
 		)
 		.text(1800);
 
-	console.log("Load the data");
 	d3.json("https://bost.ocks.org/mike/nations/nations.json").then(function(nations) {
-		console.log("Data loaded");
 		// A bisector since many nation's data is sparsely-defined.
 		var bisect = d3.bisector(function(d) { return d[0]; });
 
@@ -214,7 +212,13 @@ GapMinder.Example = {};
 GapMinder.Example.view = function(vn) {
 	return m(GapMinder, {
 		xlabel: _("Personas Socias"),
+		xmin: 300,
+		xmax: 1e5,
 		ylabel: _("Contratos"),
+		ymin: 10,
+		ymax: 85,
+		rmin: 0,
+		rmax: 5e8,
 		style: {
 			height: '806px',
 			width: '98%',
