@@ -37,7 +37,7 @@ GapMinder.oncreate = function(vn) {
 			.attr("height", height + margin.top + margin.bottom)
 			;
 	var view = svg.append("g")
-			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 	// Add the x-axis.
 	view.append("g")
