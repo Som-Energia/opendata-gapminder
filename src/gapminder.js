@@ -116,15 +116,15 @@ GapMinder.oncreate = function(vn) {
 			.on("mouseover", enableInteraction);
 
 		// Start a transition that interpolates the data based on year.
+		play();
 		function play() {
 			console.log("play");
 			view.transition()
 				.duration(30000)
 				.ease(d3.easeLinear)
 				.tween("year", tweenYear)
-				.each("end", play);
+				.on("end", play);
 		}
-		play();
 
 		// Positions the dots based on data.
 		function position(dot) {
