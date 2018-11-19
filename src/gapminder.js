@@ -29,6 +29,8 @@ GapMinder.oncreate = function(vn) {
 	var xAxis = d3.axisBottom().scale(xScale).ticks(12, d3.format(",d"));
 	var yAxis = d3.axisLeft().scale(yScale);
 
+	var axisLabelMargin = 6;
+
 	// Create the SVG container and set the origin.
 	var svg = d3.select(vn.dom).append("svg")
 			.attr("width", width + margin.left + margin.right)
@@ -53,14 +55,14 @@ GapMinder.oncreate = function(vn) {
 		.attr("class", "x label")
 		.attr("text-anchor", "end")
 		.attr("x", width)
-		.attr("y", height - 6)
+		.attr("y", height - axisLabelMargin)
 		.text(vn.attrs.xlabel);
 
 	// Add a y-axis label.
 	view.append("text")
 		.attr("class", "y label")
 		.attr("text-anchor", "end")
-		.attr("y", 6)
+		.attr("y", axisLabelMargin)
 		.attr("dy", ".75em")
 		.attr("transform", "rotate(-90)")
 		.text(vn.attrs.ylabel);
