@@ -100,7 +100,6 @@ GapMinder.oncreate = function(vn) {
 			.enter().append("circle")
 				.attr("class", "dot")
 				.style("fill", function(d) { return colorScale(color(d)); })
-				.style("stroke", '#000')
 				.call(position)
 				.sort(order);
 
