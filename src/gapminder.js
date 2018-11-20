@@ -94,9 +94,9 @@ GapMinder.oncreate = function(vn) {
 
 		// Add a dot per nation. Initialize the data at 1800, and set the colors.
 		var dot = view.append("g")
-				.attr("class", "dots")
+            .attr("class", "dots")
 			.selectAll(".dot")
-				.data(interpolateData(1800))
+            .data(interpolateData(1800))
 			.enter().append("circle")
 				.attr("class", "dot")
 				.style("fill", function(d) { return colorScale(color(d)); })
