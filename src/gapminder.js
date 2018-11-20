@@ -3,6 +3,7 @@
 var d3 = require('d3');
 var m = require('mithril');
 const _ = require('./translate');
+require('./gapminder.styl');
 
 const GapMinder = {};
 GapMinder.oncreate = function(vn) {
@@ -108,11 +109,6 @@ GapMinder.oncreate = function(vn) {
 			.attr("y", box.y)
 			.attr("width", box.width)
 			.attr("height", box.height)
-			.attr("style", 
-				"fill: none;"+
-				"pointer-events: all;"+
-				"cursor: ew-resize;"
-				)
 			.on("mouseover", enableInteraction);
 
 		// Start a transition that interpolates the data based on year.
