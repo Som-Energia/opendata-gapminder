@@ -209,7 +209,7 @@ GapMinder.oncreate = function(vn) {
 };
 
 GapMinder.view = function(vn) {
-	return m('', vn.attrs);
+	return m('.gapminder', vn.attrs);
 };
 
 GapMinder.Example = {};
