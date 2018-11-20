@@ -6,8 +6,16 @@ const _ = require('./translate');
 require('./gapminder.styl');
 
 const GapMinder = {};
-GapMinder.oncreate = function(vn) {
+GapMinder.oninit = function(vn) {
+	var self = this;
+	// Exposed api
+	self.api = vn.attrs.api || {};
+	self.api.play = function() { self.play && self.play(); };
+	self.api.stop = function() { self.stop && self.stop(); };
+};
 
+GapMinder.oncreate = function(vn) {
+	var self = this;
 	// Various accessors that specify the four dimensions of data to visualize.
 	function x(d) { return d.income; }
 	function y(d) { return d.lifeExpectancy; }
@@ -112,15 +120,20 @@ GapMinder.oncreate = function(vn) {
 			.on("mouseover", enableInteraction);
 
 		// Start a transition that interpolates the data based on year.
-		play();
-		function play() {
-			console.log("play");
+		self.play = function() {
+			self.stop();
 			view.transition()
 				.duration(30000)
 				.ease(d3.easeLinear)
 				.tween("year", tweenYear)
-				.on("end", play);
-		}
+				.on("end", self.play);
+			overlay.on("mouseover", enableInteraction);
+		};
+		self.stop = function() {
+			view.transition().duration(0);
+		};
+
+		self.play();
 
 		// Positions the dots based on data.
 		function position(dot) {
@@ -142,7 +155,7 @@ GapMinder.oncreate = function(vn) {
 				.clamp(true);
 
 			// Cancel the current transition, if any.
-			view.transition().duration(0);
+			self.stop();
 
 			overlay
 				.on("mouseover", mouseover)
@@ -209,22 +222,32 @@ GapMinder.view = function(vn) {
 };
 
 GapMinder.Example = {};
+GapMinder.Example.api = {};
 GapMinder.Example.view = function(vn) {
-	return m(GapMinder, {
-		xlabel: _("Personas Socias"),
-		xmin: 300,
-		xmax: 1e5,
-		ylabel: _("Contratos"),
-		ymin: 10,
-		ymax: 85,
-		rmin: 0,
-		rmax: 5e8,
-		style: {
-			height: '806px',
-			width: '98%',
-			margin: '1%',
-		},
-	});
+	return m('', [
+		m(GapMinder, {
+			api: GapMinder.Example.api,
+			xlabel: _("Personas Socias"),
+			xmin: 300,
+			xmax: 1e5,
+			ylabel: _("Contratos"),
+			ymin: 10,
+			ymax: 85,
+			rmin: 0,
+			rmax: 5e8,
+			style: {
+				height: '606px',
+				width: '98%',
+				margin: '1%',
+			},
+		}),
+		m('button', {
+			onclick: function() { GapMinder.Example.api.play();},
+		},_('Replay')),
+		m('button', {
+			onclick: function() { GapMinder.Example.api.stop();},
+		},_('Stop')),
+	]);
 };
 
 
