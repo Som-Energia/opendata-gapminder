@@ -5,6 +5,36 @@ var m = require('mithril');
 const _ = require('./translate');
 require('./gapminder.styl');
 
+
+function zip(arrays) {
+    return arrays[0].map(function(_,i){
+        return arrays.map(function(array){return array[i]})
+    });
+}
+
+var contracts = require('./data/contracts_ccaa_monthly.yaml');
+var members = require('./data/members_ccaa_monthly.yaml');
+var dates = contracts.dates;
+
+function appendPool(target, attribute, context, dates, parent) {
+	var dates=dates.map(function(d) { return new Date(d);})
+	Object.keys(context).map(function(code) {
+		var object = context[code];
+		if (!target[code])
+			target[code] = {
+				parent: parent,
+				code: code,
+				name: object.name,
+			};
+		target[code][attribute] = zip([dates,object.values]);
+	});
+}
+var pool = {};
+appendPool(pool, 'contracts', contracts.countries['ES'].ccaas, contracts.dates, parent='ES');
+appendPool(pool, 'members', members.countries['ES'].ccaas, members.dates, parent='ES');
+pool = Object.keys(pool).map(function (k) { return pool[k]; });
+console.log('pool', pool);
+
 const GapMinder = {};
 GapMinder.oninit = function(vn) {
 	var self = this;
