@@ -130,13 +130,9 @@ GapMinder.oncreate = function(vn) {
 	// Add the year label; the value is set on transition.
 	var label = view.append("text")
 		.attr("class", "year label")
-		.attr("text-anchor", "end")
-		.attr("y", height - 24)
-		.attr("x", width)
-		.attr("style", 
-			'font: 500 196px "Helvetica Neue";'+
-			'fill: #ddd;'
-		)
+		.attr("text-anchor", "start")
+		.attr("y", 120)
+		.attr("x", 24)
 		.text('2010-01');
 
 	self.loadData = function() {
