@@ -33,7 +33,6 @@ var pool = {};
 appendPool(pool, 'contracts', contracts.countries['ES'].ccaas, contracts.dates, parent='ES');
 appendPool(pool, 'members', members.countries['ES'].ccaas, members.dates, parent='ES');
 pool = Object.keys(pool).map(function (k) { return pool[k]; });
-console.log('pool', pool);
 
 const GapMinder = {};
 GapMinder.oninit = function(vn) {
@@ -47,11 +46,12 @@ GapMinder.oninit = function(vn) {
 GapMinder.oncreate = function(vn) {
 	var self = this;
 	// Various accessors that specify the four dimensions of data to visualize.
-	function x(d) { return d.income; }
-	function y(d) { return d.lifeExpectancy; }
-	function radius(d) { return d.population; }
-	function color(d) { return d.region; }
-	function key(d) { return d.name; }
+	function x(d) { return d.contracts; }
+	function y(d) { return d.members; }
+	function radius(d) { return d.members; }
+	function color(d) { return d.code; }
+	function key(d) { return d.code; }
+	function name(d) { return d.name; }
 
 	// Chart dimensions.
 	var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5};
@@ -59,14 +59,35 @@ GapMinder.oncreate = function(vn) {
 	var height = 500 - margin.top - margin.bottom;
 
 	// Various scales. These domains make assumptions of data, naturally.
-	var xScale = d3.scaleLog().domain([vn.attrs.xmin, vn.attrs.xmax]).range([0, width]);
-	var yScale = d3.scaleLinear().domain([vn.attrs.ymin, vn.attrs.ymax]).range([height, 0]);
-	var radiusScale = d3.scaleSqrt().domain([vn.attrs.rmin, vn.attrs.rmax]).range([0, 40]);
-	var colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+	var xScale = d3.scaleLog()
+		.domain(d3.extent(contracts.values))
+		.domain([1,d3.max(contracts.values)])
+		.range([10, width])
+		;
+	var yScale = d3.scaleLog()
+		.domain(d3.extent(members.values))
+		.domain([1,d3.max(members.values)])
+		.range([height, 10])
+		;
+	var radiusScale = d3.scaleSqrt()
+		.domain([vn.attrs.rmin, vn.attrs.rmax])
+		.range([0, 40])
+		;
+	var colorScale = d3.scaleOrdinal(d3.schemeAccent);
+
+	var timeBounds = d3.extent(dates,
+		function(d,i) {
+			return new Date(d);
+		});
+
+	var timeScale = d3.scaleTime()
+		.domain(timeBounds)
+		.range([0,width])
+		;
 
 	// The x & y axes.
-	var xAxis = d3.axisBottom().scale(xScale).ticks(12, d3.format(",d"));
-	var yAxis = d3.axisLeft().scale(yScale);
+	var xAxis = d3.axisBottom().scale(xScale).ticks(22, d3.format(".0s"));
+	var yAxis = d3.axisLeft().scale(yScale).ticks(22, d3.format('.0s'));
 
 	var axisLabelMargin = 6;
 
@@ -116,9 +137,9 @@ GapMinder.oncreate = function(vn) {
 			'font: 500 196px "Helvetica Neue";'+
 			'fill: #ddd;'
 		)
-		.text(1800);
+		.text('2010-01');
 
-	d3.json("https://bost.ocks.org/mike/nations/nations.json").then(function(nations) {
+	self.loadData = function() {
 		// A bisector since many nation's data is sparsely-defined.
 		var bisect = d3.bisector(function(d) { return d[0]; });
 
@@ -126,7 +147,7 @@ GapMinder.oncreate = function(vn) {
 		var dot = view.append("g")
             .attr("class", "dots")
 			.selectAll(".dot")
-            .data(interpolateData(1800))
+            .data(interpolateData(new Date('2010-01-01')))
 			.enter().append("circle")
 				.attr("class", "dot")
 				.style("fill", function(d) { return colorScale(color(d)); })
@@ -140,7 +161,7 @@ GapMinder.oncreate = function(vn) {
 		// Add an overlay for the year label.
 		var box = label.node().getBBox();
 
-		var overlay = view .append("rect")
+		var overlay = view.append("rect")
 			.attr("class", "overlay")
 			.attr("x", box.x)
 			.attr("y", box.y)
@@ -162,13 +183,12 @@ GapMinder.oncreate = function(vn) {
 			view.transition().duration(0);
 		};
 
-		self.play();
-
 		// Positions the dots based on data.
 		function position(dot) {
 			dot .attr("cx", function(d) { return xScale(x(d)); })
 				.attr("cy", function(d) { return yScale(y(d)); })
-				.attr("r", function(d) { return radiusScale(radius(d)); });
+				.attr("r", function(d) { return radiusScale(radius(d)); })
+				.attr("r", 10);
 		}
 
 		// Defines a sort order so that the smallest dots are drawn on top.
@@ -178,8 +198,8 @@ GapMinder.oncreate = function(vn) {
 
 		// After the transition finishes, you can mouseover to change the year.
 		function enableInteraction() {
-			var yearScale = d3.scaleLinear()
-				.domain([1800, 2009])
+			var yearScale = d3.scaleTime()
+				.domain(timeBounds)
 				.range([box.x + 10, box.x + box.width - 10])
 				.clamp(true);
 
@@ -208,26 +228,37 @@ GapMinder.oncreate = function(vn) {
 		// Tweens the entire chart by first tweening the year, and then the data.
 		// For the interpolated data, the dots and label are redrawn.
 		function tweenYear() {
-			var year = d3.interpolateNumber(1800, 2009);
+			var year = d3.interpolateDate(timeBounds[0], timeBounds[1]);
 			return function(t) { displayYear(year(t)); };
 		}
 
+
 		// Updates the display to show the specified year.
 		function displayYear(year) {
-			dot.data(interpolateData(year), key).call(position).sort(order);
-			label.text(Math.round(year));
+			var interpolatedData = interpolateData(year);
+			dot.data(interpolatedData, key).call(position).sort(order);
+			label.text(year.toISOString().slice(0,7));
 		}
 
 		// Interpolates the dataset for the given (fractional) year.
 		function interpolateData(year) {
-			return nations.map(function(d) {
-				return {
-					name: d.name,
-					region: d.region,
-					income: interpolateValues(d.income, year),
-					population: interpolateValues(d.population, year),
-					lifeExpectancy: interpolateValues(d.lifeExpectancy, year)
+			return pool.map(function(object) {
+				function getValue(source) {
+					const minimum = 1; // 1 for log, 0 for linear
+					if (!source) return minimum;
+					var value = interpolateValues(source,year);
+					if (!value) return minimum;
+					return value;
+				}
+				var result = {
+					date: year,
+					code: object.code,
+					parent: object.parent,
+					name: object.name,
+					contracts: getValue(object.contracts),
+					members: getValue(object.members),
 				};
+				return result;
 			});
 		}
 
@@ -242,8 +273,9 @@ GapMinder.oncreate = function(vn) {
 			}
 			return a[1];
 		}
-	});
-
+	};
+	self.loadData();
+	self.play();
 };
 
 GapMinder.view = function(vn) {
@@ -256,14 +288,14 @@ GapMinder.Example.view = function(vn) {
 	return m('', [
 		m(GapMinder, {
 			api: GapMinder.Example.api,
-			xlabel: _("Personas Socias"),
 			xmin: 300,
 			xmax: 1e5,
-			ylabel: _("Contratos"),
+			xlabel: _("Contratos"),
 			ymin: 10,
 			ymax: 85,
+			ylabel: _("Personas Socias"),
 			rmin: 0,
-			rmax: 5e8,
+			rmax: 30,
 			style: {
 				height: '606px',
 				width: '98%',
