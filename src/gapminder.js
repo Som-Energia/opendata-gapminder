@@ -63,11 +63,13 @@ GapMinder.oncreate = function(vn) {
 		.domain(d3.extent(contracts.values))
 		.domain([1,d3.max(contracts.values)])
 		.range([10, width])
+		.clamp(true)
 		;
 	var yScale = d3.scaleLog()
 		.domain(d3.extent(members.values))
 		.domain([1,d3.max(members.values)])
 		.range([height, 10])
+		.clamp(true)
 		;
 	var radiusScale = d3.scaleSqrt()
 		.domain([vn.attrs.rmin, vn.attrs.rmax])
@@ -197,7 +199,8 @@ GapMinder.oncreate = function(vn) {
 			var yearScale = d3.scaleTime()
 				.domain(timeBounds)
 				.range([box.x + 10, box.x + box.width - 10])
-				.clamp(true);
+				.clamp(true)
+				;
 
 			// Cancel the current transition, if any.
 			self.stop();
