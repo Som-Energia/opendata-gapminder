@@ -90,7 +90,7 @@ GapMinder.oncreate = function(vn) {
 		;
 	var radiusScale = d3.scaleSqrt()
 		.domain(d3.extent(members.values))
-		.range([5, 50])
+		.range([5, 80])
 		;
 	var colorScale = d3.scaleOrdinal(d3.schemeAccent);
 
@@ -209,7 +209,6 @@ GapMinder.oncreate = function(vn) {
 			dot .attr("cx", function(d) { return xScale(x(d)); })
 				.attr("cy", function(d) { return yScale(y(d)); })
 				.attr("r", function(d) { return radiusScale(radius(d)); })
-				//.attr("r", 10)
 				;
 		}
 
@@ -313,6 +312,9 @@ GapMinder.Example.view = function(vn) {
 			api: GapMinder.Example.api,
 			xlabel: _("Contratos"),
 			ylabel: _("Personas Socias"),
+			style: {
+				height: '800px',
+			},
 		}),
 		m('button', {
 			onclick: function() { GapMinder.Example.api.play();},
