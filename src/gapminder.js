@@ -88,16 +88,22 @@ GapMinder.oncreate = function(vn) {
 		;
 
 	// The x & y axes.
-	var xAxis = d3.axisBottom().scale(xScale).ticks(22, d3.format(".0s"));
-	var yAxis = d3.axisLeft().scale(yScale).ticks(22, d3.format('.0s'));
+	var xAxis = d3.axisBottom()
+		.scale(xScale)
+		.ticks(22, d3.format(".0s"))
+		;
+	var yAxis = d3.axisLeft()
+		.scale(yScale)
+		.ticks(22, d3.format('.0s'))
+		;
 
 	var axisLabelMargin = 6;
 
 	// Create the SVG container and set the origin.
 	var svg = d3.select(vn.dom).append("svg")
-			.attr("width", width + margin.left + margin.right)
-			.attr("height", height + margin.top + margin.bottom)
-			;
+		.attr("width", width + margin.left + margin.right)
+		.attr("height", height + margin.top + margin.bottom)
+		;
 	var view = svg.append("g")
 		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
