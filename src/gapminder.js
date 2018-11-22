@@ -41,17 +41,31 @@ GapMinder.oninit = function(vn) {
 	self.api = vn.attrs.api || {};
 	self.api.play = function() { self.play && self.play(); };
 	self.api.stop = function() { self.stop && self.stop(); };
+	self.parameters = {
+		x: 'contracts',
+		y: 'members',
+		r: 'members',
+		color: 'code',
+//		key: 'parent',
+		key: 'code',
+		name: 'name',
+	};
 };
 
 GapMinder.oncreate = function(vn) {
 	var self = this;
 	// Various accessors that specify the four dimensions of data to visualize.
-	function x(d) { return d.contracts; }
-	function y(d) { return d.members; }
-	function radius(d) { return d.members; }
-	function color(d) { return d.code; }
-	function key(d) { return d.code; }
-	function name(d) { return d.name; }
+	function pick(param) {
+		return function(d) {
+			return d[self.parameters[param]];
+		};
+	}
+	var x = pick('x');
+	var y = pick('y');
+	var radius = pick('r');
+	var color = pick('color');
+	var key = pick('key');
+	var name = pick('name');
 
 	self.width = vn.dom.offsetWidth;
 	self.height = vn.dom.offsetHeight;
@@ -75,8 +89,8 @@ GapMinder.oncreate = function(vn) {
 		.clamp(true)
 		;
 	var radiusScale = d3.scaleSqrt()
-		.domain([vn.attrs.rmin, vn.attrs.rmax])
-		.range([0, 40])
+		.domain(d3.extent(members.values))
+		.range([5, 50])
 		;
 	var colorScale = d3.scaleOrdinal(d3.schemeAccent);
 
@@ -195,7 +209,8 @@ GapMinder.oncreate = function(vn) {
 			dot .attr("cx", function(d) { return xScale(x(d)); })
 				.attr("cy", function(d) { return yScale(y(d)); })
 				.attr("r", function(d) { return radiusScale(radius(d)); })
-				.attr("r", 10);
+				//.attr("r", 10)
+				;
 		}
 
 		// Defines a sort order so that the smallest dots are drawn on top.
@@ -296,14 +311,8 @@ GapMinder.Example.view = function(vn) {
 	return m('', [
 		m(GapMinder, {
 			api: GapMinder.Example.api,
-			xmin: 300,
-			xmax: 1e5,
 			xlabel: _("Contratos"),
-			ymin: 10,
-			ymax: 85,
 			ylabel: _("Personas Socias"),
-			rmin: 0,
-			rmax: 30,
 		}),
 		m('button', {
 			onclick: function() { GapMinder.Example.api.play();},
