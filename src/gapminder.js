@@ -152,6 +152,29 @@ GapMinder.oncreate = function(vn) {
 		.attr("transform", "rotate(-90)")
 		.text(vn.attrs.ylabel);
 
+	// Add grids
+	var xGridAxis = d3.axisBottom()
+		.scale(xScale)
+		.ticks(22, d3.format(".0s"))
+		.tickSize(-height, 0, 0)
+		.tickFormat("")
+		;
+	var yGridAxis = d3.axisLeft()
+		.scale(yScale)
+		.ticks(22, d3.format('.0s'))
+		.tickSize(-width, 0, 0)
+		.tickFormat("")
+		;
+	view.append("g")
+		.attr("class", "grid")
+		.attr("transform", "translate(0," + height + ")")
+		.call(xGridAxis)
+		;
+	view.append("g")         
+		.attr("class", "grid")
+		.call(yGridAxis)
+		;
+
 	// Add the year label; the value is set on transition.
 	var label = view.append("text")
 		.attr("class", "year label")
