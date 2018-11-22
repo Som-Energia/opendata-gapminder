@@ -53,10 +53,13 @@ GapMinder.oncreate = function(vn) {
 	function key(d) { return d.code; }
 	function name(d) { return d.name; }
 
+	self.width = vn.dom.offsetWidth;
+	self.height = vn.dom.offsetHeight;
+
 	// Chart dimensions.
 	var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5};
-	var width = 960 - margin.right;
-	var height = 500 - margin.top - margin.bottom;
+	var width = self.width - margin.right - margin.left;
+	var height = self.height - margin.top - margin.bottom;
 
 	// Various scales. These domains make assumptions of data, naturally.
 	var xScale = d3.scaleLog()
@@ -301,11 +304,6 @@ GapMinder.Example.view = function(vn) {
 			ylabel: _("Personas Socias"),
 			rmin: 0,
 			rmax: 30,
-			style: {
-				height: '606px',
-				width: '98%',
-				margin: '1%',
-			},
 		}),
 		m('button', {
 			onclick: function() { GapMinder.Example.api.play();},
