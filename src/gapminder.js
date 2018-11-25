@@ -11,6 +11,14 @@ function zip(arrays) {
         return arrays.map(function(array){return array[i]})
     });
 }
+function diff(array) {
+	var previous = 0;
+	return array.map(function (v) {
+		var result = v - previous;
+		previous = v;
+		return result;
+	});
+}
 
 var contracts = require('./data/contracts_ccaa_monthly.yaml');
 var members = require('./data/members_ccaa_monthly.yaml');
@@ -27,12 +35,13 @@ function appendPool(target, attribute, context, dates, parent) {
 				name: object.name,
 			};
 		target[code][attribute] = zip([dates,object.values]);
+		target[code][attribute+'_change'] = zip([dates,diff(object.values)]);
 	});
 }
 var pool = {};
 Object.keys(contracts.countries).map(function(countryCode) {
-	appendPool(pool, 'contracts', contracts.countries[countryCode].ccaas, contracts.dates, parent=countryCode);
-	appendPool(pool, 'members', members.countries[countryCode].ccaas, members.dates, parent=countryCode);
+	appendPool(pool, 'contracts', contracts.countries[countryCode].ccaas, contracts.dates, countryCode);
+	appendPool(pool, 'members', members.countries[countryCode].ccaas, members.dates, countryCode);
 });
 pool = Object.keys(pool).map(function (k) { return pool[k]; });
 
@@ -46,7 +55,7 @@ GapMinder.oninit = function(vn) {
 	self.parameters = {
 		x: 'contracts',
 		y: 'members',
-		r: 'members',
+		r: 'members_change',
 		color: 'code',
 //		key: 'parent',
 		key: 'code',
@@ -303,7 +312,9 @@ GapMinder.oncreate = function(vn) {
 					parent: object.parent,
 					name: object.name,
 					contracts: getValue(object.contracts),
+					contracts_change: getValue(object.contracts_change),
 					members: getValue(object.members),
+					members_change: getValue(object.members_change),
 				};
 				return result;
 			});
