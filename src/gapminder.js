@@ -30,8 +30,10 @@ function appendPool(target, attribute, context, dates, parent) {
 	});
 }
 var pool = {};
-appendPool(pool, 'contracts', contracts.countries['ES'].ccaas, contracts.dates, parent='ES');
-appendPool(pool, 'members', members.countries['ES'].ccaas, members.dates, parent='ES');
+Object.keys(contracts.countries).map(function(countryCode) {
+	appendPool(pool, 'contracts', contracts.countries[countryCode].ccaas, contracts.dates, parent=countryCode);
+	appendPool(pool, 'members', members.countries[countryCode].ccaas, members.dates, parent=countryCode);
+});
 pool = Object.keys(pool).map(function (k) { return pool[k]; });
 
 const GapMinder = {};
