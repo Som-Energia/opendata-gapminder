@@ -24,13 +24,14 @@ var contracts = require('./data/contracts_ccaa_monthly.yaml');
 var members = require('./data/members_ccaa_monthly.yaml');
 var dates = contracts.dates;
 
-function appendPool(target, attribute, context, dates, parent) {
+function appendPool(target, attribute, context, dates, parentCode, level) {
+	context = context[parentCode][level];
 	var dates=dates.map(function(d) { return new Date(d);})
 	Object.keys(context).map(function(code) {
 		var object = context[code];
 		if (!target[code])
 			target[code] = {
-				parent: parent,
+				parent: parentCode,
 				code: code,
 				name: object.name,
 			};
@@ -40,8 +41,8 @@ function appendPool(target, attribute, context, dates, parent) {
 }
 var pool = {};
 Object.keys(contracts.countries).map(function(countryCode) {
-	appendPool(pool, 'contracts', contracts.countries[countryCode].ccaas, contracts.dates, countryCode);
-	appendPool(pool, 'members', members.countries[countryCode].ccaas, members.dates, countryCode);
+	appendPool(pool, 'contracts', contracts.countries, contracts.dates, countryCode, 'ccaas');
+	appendPool(pool, 'members', members.countries, members.dates, countryCode, 'ccaas');
 });
 pool = Object.keys(pool).map(function (k) { return pool[k]; });
 
