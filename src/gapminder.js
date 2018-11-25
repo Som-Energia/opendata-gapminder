@@ -229,7 +229,7 @@ GapMinder.oncreate = function(vn) {
 		self.play = function() {
 			self.stop();
 			view.transition()
-				.duration(30000)
+				.duration(60000)
 				.ease(d3.easeLinear)
 				.tween("year", tweenYear)
 				.on("end", self.play);
@@ -282,33 +282,33 @@ GapMinder.oncreate = function(vn) {
 			}
 		}
 
-		// Tweens the entire chart by first tweening the year, and then the data.
+		// Tweens the entire chart by first tweening the date, and then the data.
 		// For the interpolated data, the dots and label are redrawn.
 		function tweenYear() {
-			var year = d3.interpolateDate(timeBounds[0], timeBounds[1]);
-			return function(t) { displayYear(year(t)); };
+			var date = d3.interpolateDate(timeBounds[0], timeBounds[1]);
+			return function(t) { displayYear(date(t)); };
 		}
 
 
-		// Updates the display to show the specified year.
-		function displayYear(year) {
-			var interpolatedData = interpolateData(year);
+		// Updates the display to show the specified date.
+		function displayYear(date) {
+			var interpolatedData = interpolateData(date);
 			dot.data(interpolatedData, key).call(position).sort(order);
-			label.text(year.toISOString().slice(0,7));
+			label.text(date.toISOString().slice(0,7));
 		}
 
-		// Interpolates the dataset for the given (fractional) year.
-		function interpolateData(year) {
+		// Interpolates the dataset for the given date.
+		function interpolateData(date) {
 			return pool.map(function(object) {
 				function getValue(source) {
 					const minimum = 1; // 1 for log, 0 for linear
 					if (!source) return minimum;
-					var value = interpolateValues(source,year);
+					var value = interpolateValues(source,date);
 					if (!value) return minimum;
 					return value;
 				}
 				var result = {
-					date: year,
+					date: date,
 					code: object.code,
 					parent: object.parent,
 					name: object.name,
@@ -321,13 +321,13 @@ GapMinder.oncreate = function(vn) {
 			});
 		}
 
-		// Finds (and possibly interpolates) the value for the specified year.
-		function interpolateValues(values, year) {
-			var i = bisect.left(values, year, 0, values.length - 1);
+		// Finds (and possibly interpolates) the value for the specified date.
+		function interpolateValues(values, date) {
+			var i = bisect.left(values, date, 0, values.length - 1);
 			var a = values[i];
 			if (i > 0) {
-				var b = values[i - 1],
-					t = (year - a[0]) / (b[0] - a[0]);
+				var b = values[i - 1];
+				var t = (date - a[0]) / (b[0] - a[0]);
 				return a[1] * (1 - t) + b[1] * t;
 			}
 			return a[1];
