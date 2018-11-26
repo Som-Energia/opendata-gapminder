@@ -171,12 +171,12 @@ GapMinder.oncreate = function(vn) {
 		.tickFormat("")
 		;
 	view.append("g")
-		.attr("class", "grid")
+		.attr("class", "grid x")
 		.attr("transform", "translate(0," + height + ")")
 		.call(xGridAxis)
 		;
 	view.append("g")         
-		.attr("class", "grid")
+		.attr("class", "grid y")
 		.call(yGridAxis)
 		;
 
