@@ -31,8 +31,8 @@ function appendPool(target, attribute, context, dates, parentCode, level) {
 				code: code,
 				name: object.name,
 			};
-		target[code][attribute] = d3.zip(dates,object.values);
-		target[code][attribute+'_change'] = d3.zip(dates,diff(object.values));
+		target[code][attribute] = object.values;
+		target[code][attribute+'_change'] = diff(object.values);
 	});
 }
 var pool = {};
@@ -294,8 +294,8 @@ GapMinder.oncreate = function(vn) {
 				0;
 			return pool.map(function(object) {
 				function interpolate(source) {
-					if (i===0) return source[i][1];
-					return source[i][1] * (1-factor) + source[i-1][1] * factor;
+					if (i===0) return source[i];
+					return source[i] * (1-factor) + source[i-1] * factor;
 				}
 				function getValue(source) {
 					const minimum = 1; // 1 for log, 0 for linear
