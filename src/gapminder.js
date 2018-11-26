@@ -189,9 +189,6 @@ GapMinder.oncreate = function(vn) {
 		.text('2010-01');
 
 	self.loadData = function() {
-		// A bisector since many nation's data is sparsely-defined.
-		var bisect = d3.bisector(function(d) { return d[0]; });
-
 		// Add a dot per nation. Initialize the data at 1800, and set the colors.
 		var dot = view.append("g")
             .attr("class", "dots")
