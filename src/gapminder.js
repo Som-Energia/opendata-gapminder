@@ -307,17 +307,16 @@ GapMinder.oncreate = function(vn) {
 					if (!value) return minimum;
 					return value;
 				}
-				var result = {
+				return {
 					date: date,
 					code: object.code,
 					parent: object.parent,
 					name: object.name,
-					contracts: getValue(object.contracts),
-					contracts_change: getValue(object.contracts_change),
 					members: getValue(object.members),
+					contracts: getValue(object.contracts),
 					members_change: getValue(object.members_change),
+					contracts_change: getValue(object.contracts_change),
 				};
-				return result;
 			});
 		}
 	};
