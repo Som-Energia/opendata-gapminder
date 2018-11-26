@@ -98,7 +98,7 @@ GapMinder.oncreate = function(vn) {
 		;
 	var radiusScale = d3.scaleSqrt()
 		.domain(d3.extent(members.values))
-		.range([5, 80])
+		.range([5, 200])
 		;
 	var colorScale = d3.scaleOrdinal(d3.schemeAccent);
 
