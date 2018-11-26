@@ -17,11 +17,12 @@ function diff(array) {
 
 var contracts = require('./data/contracts_ccaa_monthly.yaml');
 var members = require('./data/members_ccaa_monthly.yaml');
+contracts.dates=contracts.dates.map(function(d) { return new Date(d);})
+members.dates=members.dates.map(function(d) { return new Date(d);})
 var dates = contracts.dates;
 
 function appendPool(target, attribute, context, dates, parentCode, level) {
 	context = context[parentCode][level];
-	var dates=dates.map(function(d) { return new Date(d);})
 	Object.keys(context).map(function(code) {
 		var object = context[code];
 		if (!target[code])
@@ -101,10 +102,7 @@ GapMinder.oncreate = function(vn) {
 		;
 	var colorScale = d3.scaleOrdinal(d3.schemeAccent);
 
-	var timeBounds = d3.extent(dates,
-		function(d,i) {
-			return new Date(d);
-		});
+	var timeBounds = d3.extent(dates);
 
 	var timeScale = d3.scaleTime()
 		.domain(timeBounds)
@@ -284,7 +282,6 @@ GapMinder.oncreate = function(vn) {
 			return function(t) { displayYear(date(t)); };
 		}
 
-
 		// Updates the display to show the specified date.
 		function displayYear(date) {
 			var interpolatedData = interpolateData(date);
@@ -294,11 +291,19 @@ GapMinder.oncreate = function(vn) {
 
 		// Interpolates the dataset for the given date.
 		function interpolateData(date) {
+			var i = d3.bisectLeft(dates, date, 0, dates.length - 1);
+			var factor = i>0?
+				(date - dates[i]) / (dates[i-1] - dates[i]):
+				0;
 			return pool.map(function(object) {
+				function interpolate(source) {
+					if (i===0) return source[i][1];
+					return source[i][1] * (1-factor) + source[i-1][1] * factor;
+				}
 				function getValue(source) {
 					const minimum = 1; // 1 for log, 0 for linear
 					if (!source) return minimum;
-					var value = interpolateValues(source,date);
+					var value = interpolate(source);
 					if (!value) return minimum;
 					return value;
 				}
@@ -314,18 +319,6 @@ GapMinder.oncreate = function(vn) {
 				};
 				return result;
 			});
-		}
-
-		// Finds (and possibly interpolates) the value for the specified date.
-		function interpolateValues(values, date) {
-			var i = bisect.left(values, date, 0, values.length - 1);
-			var a = values[i];
-			if (i > 0) {
-				var b = values[i - 1];
-				var t = (date - a[0]) / (b[0] - a[0]);
-				return a[1] * (1 - t) + b[1] * t;
-			}
-			return a[1];
 		}
 	};
 	self.loadData();
