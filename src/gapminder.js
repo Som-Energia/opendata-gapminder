@@ -6,11 +6,6 @@ const _ = require('./translate');
 require('./gapminder.styl');
 
 
-function zip(arrays) {
-    return arrays[0].map(function(_,i){
-        return arrays.map(function(array){return array[i]})
-    });
-}
 function diff(array) {
 	var previous = 0;
 	return array.map(function (v) {
@@ -35,8 +30,8 @@ function appendPool(target, attribute, context, dates, parentCode, level) {
 				code: code,
 				name: object.name,
 			};
-		target[code][attribute] = zip([dates,object.values]);
-		target[code][attribute+'_change'] = zip([dates,diff(object.values)]);
+		target[code][attribute] = d3.zip(dates,object.values);
+		target[code][attribute+'_change'] = d3.zip(dates,diff(object.values));
 	});
 }
 var pool = {};
