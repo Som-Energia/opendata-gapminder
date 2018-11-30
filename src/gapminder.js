@@ -49,6 +49,10 @@ GapMinder.oninit = function(vn) {
 	self.api = vn.attrs.api || {};
 	self.api.play = function() { self.play && self.play(); };
 	self.api.stop = function() { self.stop && self.stop(); };
+	self.api.setXLinear = function() { self.setXLinear && self.setXLinear(); };
+	self.api.setXLog = function() { self.setXLog && self.setXLog(); };
+	self.api.setYLinear = function() { self.setYLinear && self.setYLinear(); };
+	self.api.setYLog = function() { self.setYLog && self.setYLog(); };
 	self.parameters = {
 		x: 'contracts',
 		y: 'members',
@@ -84,18 +88,29 @@ GapMinder.oncreate = function(vn) {
 	var height = self.height - margin.top - margin.bottom;
 
 	// Various scales. These domains make assumptions of data, naturally.
-	var xScale = d3.scaleLog()
-		.domain(d3.extent(contracts.values))
+	var xScaleLog = d3.scaleLog()
 		.domain([1,d3.max(contracts.values)])
 		.range([10, width])
 		.clamp(true)
 		;
-	var yScale = d3.scaleLog()
-		.domain(d3.extent(members.values))
+	var xScaleLinear = d3.scaleLinear()
+		.domain(d3.extent(contracts.values))
+		.range([10, width])
+		.clamp(true)
+		;
+	var xScale = xScaleLog;
+
+	var yScaleLog = d3.scaleLog()
 		.domain([1,d3.max(members.values)])
 		.range([height, 10])
 		.clamp(true)
 		;
+	var yScaleLinear = d3.scaleLinear()
+		.domain(d3.extent(members.values))
+		.range([height, 10])
+		.clamp(true)
+		;
+	var yScale = yScaleLog;
 	var radiusScale = d3.scaleSqrt()
 		.domain(d3.extent(members.values))
 		.range([5, 200])
@@ -125,6 +140,7 @@ GapMinder.oncreate = function(vn) {
 	var svg = d3.select(vn.dom).append("svg")
 		.attr("width", width + margin.left + margin.right)
 		.attr("height", height + margin.top + margin.bottom)
+		.attr("preserveAspectRatio", 'xMidYMin meet')
 		;
 	var view = svg.append("g")
 		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -153,13 +169,20 @@ GapMinder.oncreate = function(vn) {
 		.attr("class", "y label")
 		.attr("text-anchor", "end")
 		.attr("y", axisLabelMargin)
+		.attr("x", "-1em")
 		.attr("dy", ".75em")
 		.attr("transform", "rotate(-90)")
 		.text(vn.attrs.ylabel);
 
 	// Add grids
 	var xGridAxis = d3.axisBottom()
-		.scale(xScale)
+		.scale(xScaleLog)
+		.ticks(22, d3.format(".0s"))
+		.tickSize(-height, 0, 0)
+		.tickFormat("")
+		;
+	var xGridAxisLinear = d3.axisBottom()
+		.scale(xScaleLinear)
 		.ticks(22, d3.format(".0s"))
 		.tickSize(-height, 0, 0)
 		.tickFormat("")
@@ -180,31 +203,134 @@ GapMinder.oncreate = function(vn) {
 		.call(yGridAxis)
 		;
 
-	// Add the year label; the value is set on transition.
+	view.selectAll('.axis.y').on('click', function() {
+		if (yScale === yScaleLog)
+			self.setYLinear();
+		else
+			self.setYLog();
+	});
+	view.selectAll('.axis.x').on('click', function() {
+		if (xScale === xScaleLog)
+			self.setXLinear();
+		else
+			self.setXLog();
+	});
+
+	// Add the date label; the value is set on transition.
 	var label = view.append("text")
-		.attr("class", "year label")
+		.attr("class", "date label")
 		.attr("text-anchor", "start")
 		.attr("y", 120)
 		.attr("x", 24)
 		.text('2010-01');
 
-	self.loadData = function() {
-		// Add a dot per nation. Initialize the data at 1800, and set the colors.
-		var dot = view.append("g")
-            .attr("class", "dots")
-			.selectAll(".dot")
-            .data(interpolateData(new Date('2010-01-01')))
-			.enter().append("circle")
-				.attr("class", "dot")
-				.style("fill", function(d) { return colorScale(color(d)); })
-				.call(position)
-				.sort(order);
+	self.setYLinear = function() {
+		resetYAxis(yScaleLinear);
+	};
+	self.setYLog = function() {
+		resetYAxis(yScaleLog);
+	};
+	self.setXLinear = function() {
+		resetXAxis(xScaleLinear);
+	};
+	self.setXLog = function() {
+		resetXAxis(xScaleLog);
+	};
+	function resetXAxis(scale) {
+		xScale = scale;
+		xGridAxis.scale(xScale);
+		xAxis.scale(xScale);
+		d3.select(".axis.x")
+			.call(xAxis)
+			;
+		d3.select(".grid.x")
+			.call(xGridAxis)
+			;
+		displayDate(self.currentDate);
+	}
+	function resetYAxis(scale) {
+		yScale = scale;
+		yGridAxis.scale(yScale);
+		yAxis.scale(yScale);
+		d3.select(".axis.y")
+			.call(yAxis)
+			;
+		d3.select(".grid.y")
+			.call(yGridAxis)
+			;
+		displayDate(self.currentDate);
+	}
+	// Positions the dots based on data.
+	function position(dot) {
+		dot .attr("cx", function(d) { return xScale(x(d)); })
+			.attr("cy", function(d) { return yScale(y(d)); })
+			.attr("r", function(d) { return radiusScale(radius(d)); })
+			;
+	}
 
+	// Defines a sort order so that the smallest dots are drawn on top.
+	function order(a, b) {
+		return radius(b) - radius(a);
+	}
+
+	// Add a dot per nation. Initialize the data at 1800, and set the colors.
+	var dot = view.append("g")
+		.attr("class", "dots")
+		.selectAll(".dot")
+		.data(interpolateData(new Date('2010-01-01')))
+		.enter().append("circle")
+			.attr("class", "dot")
+			.style("fill", function(d) { return colorScale(color(d)); })
+			.call(position)
+			.sort(order);
+
+	// Updates the display to show the specified date.
+	function displayDate(date) {
+		self.currentDate=date;
+		dot
+			.data(interpolateData(date), key)
+			.call(position)
+			.sort(order)
+			;
+		label.text(date.toISOString().slice(0,7));
+	}
+
+	// Interpolates the dataset for the given date.
+	function interpolateData(date) {
+		var i = d3.bisectLeft(dates, date, 0, dates.length - 1);
+		var factor = i>0?
+			(date - dates[i]) / (dates[i-1] - dates[i]):
+			0;
+		return pool.map(function(object) {
+			function interpolate(source) {
+				if (i===0) return source[i];
+				return source[i] * (1-factor) + source[i-1] * factor;
+			}
+			function getValue(source) {
+				const minimum = 1; // 1 for log, 0 for linear
+				if (!source) return minimum;
+				var value = interpolate(source);
+				if (!value) return minimum;
+				return value;
+			}
+			return {
+				date: date,
+				code: object.code,
+				parent: object.parent,
+				name: object.name,
+				members: getValue(object.members),
+				contracts: getValue(object.contracts),
+				members_change: getValue(object.members_change),
+				contracts_change: getValue(object.contracts_change),
+			};
+		});
+	}
+	self.loadData = function() {
 		// Add a title.
 		dot.append("title")
 			.text(function(d) { return d.name; });
 
-		// Add an overlay for the year label.
+		// Add an overlay for the date label.
 		var box = label.node().getBBox();
 
 		var overlay = view.append("rect")
@@ -215,13 +341,13 @@ GapMinder.oncreate = function(vn) {
 			.attr("height", box.height)
 			.on("mouseover", enableInteraction);
 
-		// Start a transition that interpolates the data based on year.
+		// Start a transition that interpolates the data based on date.
 		self.play = function() {
 			self.stop();
 			view.transition()
 				.duration(60000)
 				.ease(d3.easeLinear)
-				.tween("year", tweenYear)
+				.tween("dateplay", dateplay)
 				.on("end", self.play);
 			overlay.on("mouseover", enableInteraction);
 		};
@@ -229,22 +355,9 @@ GapMinder.oncreate = function(vn) {
 			view.transition().duration(0);
 		};
 
-		// Positions the dots based on data.
-		function position(dot) {
-			dot .attr("cx", function(d) { return xScale(x(d)); })
-				.attr("cy", function(d) { return yScale(y(d)); })
-				.attr("r", function(d) { return radiusScale(radius(d)); })
-				;
-		}
-
-		// Defines a sort order so that the smallest dots are drawn on top.
-		function order(a, b) {
-			return radius(b) - radius(a);
-		}
-
-		// After the transition finishes, you can mouseover to change the year.
+		// After the transition finishes, you can mouseover to change the date.
 		function enableInteraction() {
-			var yearScale = d3.scaleTime()
+			var dateScale = d3.scaleTime()
 				.domain(timeBounds)
 				.range([box.x + 10, box.x + box.width - 10])
 				.clamp(true)
@@ -268,54 +381,17 @@ GapMinder.oncreate = function(vn) {
 			}
 
 			function mousemove() {
-				displayYear(yearScale.invert(d3.mouse(this)[0]));
+				displayDate(dateScale.invert(d3.mouse(this)[0]));
 			}
 		}
 
 		// Tweens the entire chart by first tweening the date, and then the data.
 		// For the interpolated data, the dots and label are redrawn.
-		function tweenYear() {
+		function dateplay() {
 			var date = d3.interpolateDate(timeBounds[0], timeBounds[1]);
-			return function(t) { displayYear(date(t)); };
+			return function(t) { displayDate(date(t)); };
 		}
 
-		// Updates the display to show the specified date.
-		function displayYear(date) {
-			var interpolatedData = interpolateData(date);
-			dot.data(interpolatedData, key).call(position).sort(order);
-			label.text(date.toISOString().slice(0,7));
-		}
-
-		// Interpolates the dataset for the given date.
-		function interpolateData(date) {
-			var i = d3.bisectLeft(dates, date, 0, dates.length - 1);
-			var factor = i>0?
-				(date - dates[i]) / (dates[i-1] - dates[i]):
-				0;
-			return pool.map(function(object) {
-				function interpolate(source) {
-					if (i===0) return source[i];
-					return source[i] * (1-factor) + source[i-1] * factor;
-				}
-				function getValue(source) {
-					const minimum = 1; // 1 for log, 0 for linear
-					if (!source) return minimum;
-					var value = interpolate(source);
-					if (!value) return minimum;
-					return value;
-				}
-				return {
-					date: date,
-					code: object.code,
-					parent: object.parent,
-					name: object.name,
-					members: getValue(object.members),
-					contracts: getValue(object.contracts),
-					members_change: getValue(object.members_change),
-					contracts_change: getValue(object.contracts_change),
-				};
-			});
-		}
 	};
 	self.loadData();
 	self.play();
