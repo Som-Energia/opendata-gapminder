@@ -241,9 +241,11 @@ GapMinder.oncreate = function(vn) {
 		xGridAxis.scale(xScale);
 		xAxis.scale(xScale);
 		d3.select(".axis.x")
+			.transition()
 			.call(xAxis)
 			;
 		d3.select(".grid.x")
+			.transition()
 			.call(xGridAxis)
 			;
 		displayDate(self.currentDate);
@@ -253,9 +255,11 @@ GapMinder.oncreate = function(vn) {
 		yGridAxis.scale(yScale);
 		yAxis.scale(yScale);
 		d3.select(".axis.y")
+			.transition()
 			.call(yAxis)
 			;
 		d3.select(".grid.y")
+			.transition()
 			.call(yGridAxis)
 			;
 		displayDate(self.currentDate);
