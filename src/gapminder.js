@@ -42,6 +42,20 @@ Object.keys(contracts.countries).map(function(countryCode) {
 });
 pool = Object.keys(pool).map(function (k) { return pool[k]; });
 
+
+var metrics = {
+	contracts: _('Contratos'),
+	contracts_change: _('Nuevos contratos'), 
+	members: _('Personas socias'),
+	members_change: _('Nuevas personas socias'),
+};
+var metricOptions = Object.keys(metrics).map(function(key) {
+	return {
+		value: key,
+		text: metrics[key],
+	};
+});
+
 const GapMinder = {};
 GapMinder.oninit = function(vn) {
 	var self = this;
@@ -53,8 +67,11 @@ GapMinder.oninit = function(vn) {
 	self.api.setXLog = function() { self.setXLog && self.setXLog(); };
 	self.api.setYLinear = function() { self.setYLinear && self.setYLinear(); };
 	self.api.setYLog = function() { self.setYLog && self.setYLog(); };
+	self.api.setX = function(metric) { self.setXMetric(metric); };
+	self.api.setY = function(metric) { self.setYMetric(metric); };
+	self.api.setR = function(metric) { self.parameters.r = metric; };
 	self.parameters = {
-		x: 'contracts',
+		x: 'contracts_change',
 		y: 'members',
 		r: 'members_change',
 		color: 'code',
@@ -98,7 +115,7 @@ GapMinder.oncreate = function(vn) {
 		.range([10, width])
 		.clamp(true)
 		;
-	var xScale = xScaleLog;
+	self.xScale = xScaleLog;
 
 	var yScaleLog = d3.scaleLog()
 		.domain([1,d3.max(members.values)])
@@ -110,7 +127,7 @@ GapMinder.oncreate = function(vn) {
 		.range([height, 10])
 		.clamp(true)
 		;
-	var yScale = yScaleLog;
+	self.yScale = yScaleLog;
 	var radiusScale = d3.scaleSqrt()
 		.domain(d3.extent(members.values))
 		.range([5, 200])
@@ -126,11 +143,11 @@ GapMinder.oncreate = function(vn) {
 
 	// The x & y axes.
 	var xAxis = d3.axisBottom()
-		.scale(xScale)
+		.scale(self.xScale)
 		.ticks(22, d3.format(".0s"))
 		;
 	var yAxis = d3.axisLeft()
-		.scale(yScale)
+		.scale(self.yScale)
 		.ticks(22, d3.format('.0s'))
 		;
 
@@ -157,22 +174,22 @@ GapMinder.oncreate = function(vn) {
 		.call(yAxis);
 
 	// Add an x-axis label.
-	view.append("text")
+	self.xLabel = view.append("text")
 		.attr("class", "x label")
 		.attr("text-anchor", "end")
 		.attr("x", width)
 		.attr("y", height - axisLabelMargin)
-		.text(vn.attrs.xlabel);
+		.text(metrics[self.parameters.x]);
 
 	// Add a y-axis label.
-	view.append("text")
+	self.yLabel = view.append("text")
 		.attr("class", "y label")
 		.attr("text-anchor", "end")
 		.attr("y", axisLabelMargin)
 		.attr("x", "-1em")
 		.attr("dy", ".75em")
 		.attr("transform", "rotate(-90)")
-		.text(vn.attrs.ylabel);
+		.text(metrics[self.parameters.y]);
 
 	// Add grids
 	var xGridAxis = d3.axisBottom()
@@ -188,7 +205,7 @@ GapMinder.oncreate = function(vn) {
 		.tickFormat("")
 		;
 	var yGridAxis = d3.axisLeft()
-		.scale(yScale)
+		.scale(self.yScale)
 		.ticks(22, d3.format('.0s'))
 		.tickSize(-width, 0, 0)
 		.tickFormat("")
@@ -204,26 +221,36 @@ GapMinder.oncreate = function(vn) {
 		;
 
 	view.selectAll('.axis.y').on('click', function() {
-		if (yScale === yScaleLog)
+		if (self.yScale === yScaleLog)
 			self.setYLinear();
 		else
 			self.setYLog();
 	});
 	view.selectAll('.axis.x').on('click', function() {
-		if (xScale === xScaleLog)
+		if (self.xScale === xScaleLog)
 			self.setXLinear();
 		else
 			self.setXLog();
 	});
 
 	// Add the date label; the value is set on transition.
-	var label = view.append("text")
+	var dateLabel = view.append("text")
 		.attr("class", "date label")
 		.attr("text-anchor", "start")
 		.attr("y", 120)
 		.attr("x", 24)
-		.text('2010-01');
+		.text('0000-00');
 
+	self.setXMetric = function(metric) {
+		self.parameters.x = metric;
+		self.xLabel.text(metrics[metric]);
+		resetXAxis(self.xScale);
+	};
+	self.setYMetric = function(metric) {
+		self.parameters.y = metric;
+		self.yLabel.text(metrics[metric]);
+		resetYAxis(self.yScale);
+	};
 	self.setYLinear = function() {
 		resetYAxis(yScaleLinear);
 	};
@@ -237,9 +264,9 @@ GapMinder.oncreate = function(vn) {
 		resetXAxis(xScaleLog);
 	};
 	function resetXAxis(scale) {
-		xScale = scale;
-		xGridAxis.scale(xScale);
-		xAxis.scale(xScale);
+		self.xScale = scale;
+		xGridAxis.scale(self.xScale);
+		xAxis.scale(self.xScale);
 		d3.select(".axis.x")
 			.transition()
 			.call(xAxis)
@@ -251,9 +278,9 @@ GapMinder.oncreate = function(vn) {
 		displayDate(self.currentDate);
 	}
 	function resetYAxis(scale) {
-		yScale = scale;
-		yGridAxis.scale(yScale);
-		yAxis.scale(yScale);
+		self.yScale = scale;
+		yGridAxis.scale(self.yScale);
+		yAxis.scale(self.yScale);
 		d3.select(".axis.y")
 			.transition()
 			.call(yAxis)
@@ -266,8 +293,8 @@ GapMinder.oncreate = function(vn) {
 	}
 	// Positions the dots based on data.
 	function position(dot) {
-		dot .attr("cx", function(d) { return xScale(x(d)); })
-			.attr("cy", function(d) { return yScale(y(d)); })
+		dot .attr("cx", function(d) { return self.xScale(x(d)); })
+			.attr("cy", function(d) { return self.yScale(y(d)); })
 			.attr("r", function(d) { return radiusScale(radius(d)); })
 			;
 	}
@@ -276,12 +303,11 @@ GapMinder.oncreate = function(vn) {
 	function order(a, b) {
 		return radius(b) - radius(a);
 	}
-
 	// Add a dot per nation. Initialize the data at 1800, and set the colors.
 	var dot = view.append("g")
 		.attr("class", "dots")
 		.selectAll(".dot")
-		.data(interpolateData(new Date('2010-01-01')))
+		.data(interpolateData(self.currentDate))
 		.enter().append("circle")
 			.attr("class", "dot")
 			.style("fill", function(d) { return colorScale(color(d)); })
@@ -296,7 +322,7 @@ GapMinder.oncreate = function(vn) {
 			.call(position)
 			.sort(order)
 			;
-		label.text(date.toISOString().slice(0,7));
+		dateLabel.text(date.toISOString().slice(0,7));
 	}
 
 	// Interpolates the dataset for the given date.
@@ -335,7 +361,7 @@ GapMinder.oncreate = function(vn) {
 			.text(function(d) { return d.name; });
 
 		// Add an overlay for the date label.
-		var box = label.node().getBBox();
+		var box = dateLabel.node().getBBox();
 
 		var overlay = view.append("rect")
 			.attr("class", "overlay")
@@ -361,14 +387,14 @@ GapMinder.oncreate = function(vn) {
 
 		// After the transition finishes, you can mouseover to change the date.
 		function enableInteraction() {
+			// Cancel the current transition, if any.
+			self.stop();
+
 			var dateScale = d3.scaleTime()
 				.domain(timeBounds)
 				.range([box.x + 10, box.x + box.width - 10])
 				.clamp(true)
 				;
-
-			// Cancel the current transition, if any.
-			self.stop();
 
 			overlay
 				.on("mouseover", mouseover)
@@ -377,11 +403,11 @@ GapMinder.oncreate = function(vn) {
 				.on("touchmove", mousemove);
 
 			function mouseover() {
-				label.classed("active", true);
+				dateLabel.classed("active", true);
 			}
 
 			function mouseout() {
-				label.classed("active", false);
+				dateLabel.classed("active", false);
 			}
 
 			function mousemove() {
@@ -405,14 +431,23 @@ GapMinder.view = function(vn) {
 	return m('.gapminder', vn.attrs);
 };
 
+const Select = require('./mdc/select');
+const Layout = require('./mdc/layout');
+const Row = Layout.Row;
+const Cell = Layout.Cell;
+
 GapMinder.Example = {};
 GapMinder.Example.api = {};
+GapMinder.Example.xmetric = 'contracts';
+GapMinder.Example.ymetric = 'members';
+GapMinder.Example.rmetric = 'members_change';
 GapMinder.Example.view = function(vn) {
 	return m('', [
 		m(GapMinder, {
 			api: GapMinder.Example.api,
-			xlabel: _("Contratos"),
-			ylabel: _("Personas Socias"),
+			xmetric: GapMinder.Example.xmetric,
+			ymetric: GapMinder.Example.ymetric,
+			rmetric: GapMinder.Example.rmetric,
 			style: {
 				height: '800px',
 			},
@@ -423,6 +458,42 @@ GapMinder.Example.view = function(vn) {
 		m('button', {
 			onclick: function() { GapMinder.Example.api.stop();},
 		},_('Stop')),
+		m(Row, [
+			m(Cell, {span: 4}, m(Select, {
+				label: _('Eje X'),
+				options: metricOptions,
+				required: true,
+				value: 'contracts',
+				value: GapMinder.Example.xmetric,
+				onchange: function(ev) {
+					var metric = ev.target.value;
+					GapMinder.Example.xmetric = metric;
+					GapMinder.Example.api.setX(metric);
+				},
+			})),
+			m(Cell, {span: 4}, m(Select, {
+				label: _('Eje Y'),
+				options: metricOptions,
+				required: true,
+				value: GapMinder.Example.ymetric,
+				onchange: function(ev) {
+					var metric = ev.target.value;
+					GapMinder.Example.ymetric = metric;
+					GapMinder.Example.api.setY(metric);
+				},
+			})),
+			m(Cell, {span: 4}, m(Select, {
+				label: _('Radio'),
+				options: metricOptions,
+				required: true,
+				value: GapMinder.Example.rmetric,
+				onchange: function(ev) {
+					var metric = ev.target.value;
+					GapMinder.Example.rmetric = metric;
+					GapMinder.Example.api.setR(metric);
+				},
+			})),
+		])
 	]);
 };
 
