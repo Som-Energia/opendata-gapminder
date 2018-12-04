@@ -71,7 +71,7 @@ GapMinder.oninit = function(vn) {
 	self.api.setY = function(metric) { self.setYMetric(metric); };
 	self.api.setR = function(metric) { self.parameters.r = metric; };
 	self.parameters = {
-		x: 'contracts_change',
+		x: 'contracts',
 		y: 'members',
 		r: 'members_change',
 		color: 'code',
