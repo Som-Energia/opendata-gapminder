@@ -17,37 +17,61 @@ function diff(array) {
 
 var contracts = require('./data/contracts_ccaa_monthly.yaml');
 var members = require('./data/members_ccaa_monthly.yaml');
+var populationTsv = require('dsv-loader?delimiter=\t!./data/poblacio_ccaa-20140101.csv');
+var populationCCAA = {};
+populationTsv.map(function(v) {
+	v.population=parseInt(v.population_2014_01);
+	populationCCAA[v.code]=v;
+});
+console.log(populationCCAA);
 contracts.dates=contracts.dates.map(function(d) { return new Date(d);})
 members.dates=members.dates.map(function(d) { return new Date(d);})
 var dates = contracts.dates;
 
-function appendPool(target, attribute, context, dates, parentCode, level) {
-	context = context[parentCode][level];
-	Object.keys(context).map(function(code) {
-		var object = context[code];
-		if (!target[code])
-			target[code] = {
+function appendPool(target, metric, context, dates, parentCode, level) {
+	if (context===undefined) return;
+	var children = context[parentCode][level];
+	if (target[level] === undefined) {
+		target[level] = {};
+	}
+	Object.keys(children).map(function(code) {
+		var child = children[code];
+		var childTarget = target[level][code];
+		if (!childTarget) {
+			childTarget = target[level][code] = {
 				parent: parentCode,
 				code: code,
-				name: object.name,
+				name: child.name,
 			};
-		target[code][attribute] = object.values;
-		target[code][attribute+'_change'] = diff(object.values);
+			childTarget.population=
+				level==='ccaas' && populationCCAA[code]!==undefined ?
+					populationCCAA[code].population:
+					populationCCAA['00'].population;
+		}
+		var population = childTarget.population;
+		childTarget[metric] = child.values;
+		childTarget[metric+'_change'] = diff(child.values);
+		childTarget[metric+'_per1M'] = child.values.map(function(v) {
+			return 1000000*v/population;
+			});
+		appendPool(target, metric, child.states, dates, code, 'states');
 	});
 }
-var pool = {};
+var pools = {};
 Object.keys(contracts.countries).map(function(countryCode) {
-	appendPool(pool, 'contracts', contracts.countries, contracts.dates, countryCode, 'ccaas');
-	appendPool(pool, 'members', members.countries, members.dates, countryCode, 'ccaas');
+	appendPool(pools, 'contracts', contracts.countries, contracts.dates, countryCode, 'ccaas');
+	appendPool(pools, 'members', members.countries, members.dates, countryCode, 'ccaas');
 });
-pool = Object.keys(pool).map(function (k) { return pool[k]; });
+var pool = Object.keys(pools.ccaas).map(function (k) { return pools.ccaas[k]; });
 
 
 var metrics = {
 	contracts: _('Contratos'),
 	contracts_change: _('Nuevos contratos'), 
+	contracts_per1M: _('Contratos por millón de habitantes'),
 	members: _('Personas socias'),
 	members_change: _('Nuevas personas socias'),
+	members_per1M: _('Personas socias por millón de habitantes'),
 };
 var metricOptions = Object.keys(metrics).map(function(key) {
 	return {
@@ -352,6 +376,8 @@ GapMinder.oncreate = function(vn) {
 				contracts: getValue(object.contracts),
 				members_change: getValue(object.members_change),
 				contracts_change: getValue(object.contracts_change),
+				members_per1M: getValue(object.members_per1M),
+				contracts_per1M: getValue(object.contracts_per1M),
 			};
 		});
 	}
