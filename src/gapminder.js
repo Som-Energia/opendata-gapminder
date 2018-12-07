@@ -158,12 +158,6 @@ GapMinder.oncreate = function(vn) {
 		;
 	var colorScale = d3.scaleOrdinal(d3.schemeAccent);
 
-	var timeBounds = d3.extent(dates);
-
-	var timeScale = d3.scaleTime()
-		.domain(timeBounds)
-		.range([0,width])
-		;
 
 	// The x & y axes.
 	var xAxis = d3.axisBottom()
@@ -257,13 +251,53 @@ GapMinder.oncreate = function(vn) {
 			self.setXLog();
 	});
 
+	view.append('line')
+		.attr('y2',0)
+		.attr('x2',0)
+		.attr('y1',10)
+		.attr('x1',10)
+		.style('stroke', 'red')
+		;
+	var timePoint = view.append('line');
+
 	// Add the date label; the value is set on transition.
 	var dateLabel = view.append("text")
 		.attr("class", "date label")
 		.attr("text-anchor", "start")
-		.attr("y", 120)
+		.attr("y", 0)
 		.attr("x", 24)
 		.text('0000-00');
+
+	var dateBox = dateLabel.node().getBBox();
+	dateLabel.attr("y", dateBox.height-32);
+	dateBox = dateLabel.node().getBBox();
+
+	var timeBounds = d3.extent(dates);
+	var dateScale = d3.scaleTime()
+		.domain(timeBounds)
+		.range([dateBox.x + 10, dateBox.x + dateBox.width - 10])
+		.clamp(true)
+		;
+
+	var dateAxis = d3.axisBottom()
+		.scale(dateScale)
+		;
+	// Add the date-axis.
+	view.append("g")
+		.attr("class", "time axis")
+		.attr("transform", "translate(0," + 10 + ")")
+		.call(dateAxis);
+
+	timePoint
+		.attr('class', 'timepointer')
+		.attr('x1', dateScale(self.currentDate))
+		.attr('x2', dateScale(self.currentDate))
+		.attr('y1', dateBox.y)
+		.attr('y2', dateBox.y+dateBox.height)
+		.style('stroke', 'red')
+		;
+
+
 
 	self.setXMetric = function(metric) {
 		self.parameters.x = metric;
@@ -347,6 +381,10 @@ GapMinder.oncreate = function(vn) {
 			.sort(order)
 			;
 		dateLabel.text(date.toISOString().slice(0,7));
+		timePoint
+			.attr('x1', dateScale(self.currentDate))
+			.attr('x2', dateScale(self.currentDate))
+			;
 	}
 
 	// Interpolates the dataset for the given date.
@@ -387,14 +425,14 @@ GapMinder.oncreate = function(vn) {
 			.text(function(d) { return d.name; });
 
 		// Add an overlay for the date label.
-		var box = dateLabel.node().getBBox();
+		var dateBox = dateLabel.node().getBBox();
 
 		var overlay = view.append("rect")
 			.attr("class", "overlay")
-			.attr("x", box.x)
-			.attr("y", box.y)
-			.attr("width", box.width)
-			.attr("height", box.height)
+			.attr("x", dateBox.x)
+			.attr("y", dateBox.y)
+			.attr("width", dateBox.width)
+			.attr("height", dateBox.height)
 			.on("mouseover", enableInteraction);
 
 		// Start a transition that interpolates the data based on date.
@@ -415,12 +453,6 @@ GapMinder.oncreate = function(vn) {
 		function enableInteraction() {
 			// Cancel the current transition, if any.
 			self.stop();
-
-			var dateScale = d3.scaleTime()
-				.domain(timeBounds)
-				.range([box.x + 10, box.x + box.width - 10])
-				.clamp(true)
-				;
 
 			overlay
 				.on("mouseover", mouseover)
