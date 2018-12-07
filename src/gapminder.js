@@ -436,13 +436,22 @@ GapMinder.oncreate = function(vn) {
 			.on("mouseover", enableInteraction);
 
 		// Start a transition that interpolates the data based on date.
+		self.replay = function() {
+			self.currentDate = timeBounds[0];
+			self.play();
+		};
 		self.play = function() {
 			self.stop();
+			var remainingFactor = (timeBounds[1]-self.currentDate)/(
+				timeBounds[1]-timeBounds[0]);
 			view.transition()
-				.duration(60000)
+				.duration(60000*remainingFactor)
 				.ease(d3.easeLinear)
-				.tween("dateplay", dateplay)
-				.on("end", self.play);
+				.tween("dateplay", function() {
+					var date = d3.interpolateDate(self.currentDate, timeBounds[1]);
+					return function(t) { displayDate(date(t)); };
+				})
+				.on("end", self.replay);
 			overlay.on("mouseover", enableInteraction);
 		};
 		self.stop = function() {
@@ -482,7 +491,7 @@ GapMinder.oncreate = function(vn) {
 
 	};
 	self.loadData();
-	self.play();
+	self.replay();
 };
 
 GapMinder.view = function(vn) {
