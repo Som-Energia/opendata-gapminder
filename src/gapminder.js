@@ -86,7 +86,7 @@ GapMinder.oninit = function(vn) {
 	// Exposed api
 	self.api = vn.attrs.api || {};
 	self.api.play = function() { self.play && self.play(); };
-	self.api.stop = function() { self.stop && self.stop(); };
+	self.api.pause = function() { self.pause && self.pause(); };
 	self.api.setXLinear = function() { self.setXLinear && self.setXLinear(); };
 	self.api.setXLog = function() { self.setXLog && self.setXLog(); };
 	self.api.setYLinear = function() { self.setYLinear && self.setYLinear(); };
@@ -441,7 +441,7 @@ GapMinder.oncreate = function(vn) {
 			self.play();
 		};
 		self.play = function() {
-			self.stop();
+			self.pause();
 			var remainingFactor = (timeBounds[1]-self.currentDate)/(
 				timeBounds[1]-timeBounds[0]);
 			view.transition()
@@ -454,14 +454,14 @@ GapMinder.oncreate = function(vn) {
 				.on("end", self.replay);
 			overlay.on("mouseover", enableInteraction);
 		};
-		self.stop = function() {
+		self.pause = function() {
 			view.transition().duration(0);
 		};
 
 		// After the transition finishes, you can mouseover to change the date.
 		function enableInteraction() {
 			// Cancel the current transition, if any.
-			self.stop();
+			self.pause();
 
 			overlay
 				.on("mouseover", mouseover)
@@ -521,10 +521,10 @@ GapMinder.Example.view = function(vn) {
 		}),
 		m('button', {
 			onclick: function() { GapMinder.Example.api.play();},
-		},_('Replay')),
+		},_('Play')),
 		m('button', {
-			onclick: function() { GapMinder.Example.api.stop();},
-		},_('Stop')),
+			onclick: function() { GapMinder.Example.api.pause();},
+		},_('Pause')),
 		m(Row, [
 			m(Cell, {span: 4}, m(Select, {
 				label: _('Eje X'),
