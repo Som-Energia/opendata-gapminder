@@ -297,7 +297,16 @@ GapMinder.oncreate = function(vn) {
 		.style('stroke', 'red')
 		;
 
-
+	var currentInfo = view.append('foreignObject')
+		.attr('class', 'currentInfo')
+		.attr('x', width-200)
+		.attr('y', height-56)
+		.attr('width', '20em')
+		.attr('height', height/3)
+		;
+	currentInfo.append('xhtml:div')
+		.attr('class', 'currentInfoContent')
+		;
 
 	self.setXMetric = function(metric) {
 		self.parameters.x = metric;
@@ -369,8 +378,31 @@ GapMinder.oncreate = function(vn) {
 		.enter().append("circle")
 			.attr("class", "dot")
 			.style("fill", function(d) { return colorScale(color(d)); })
+			.on('mouseover', showCurrentDot)
+			.on('mousemove', showCurrentDot)
+			.on('mouseout', hideCurrentDot)
 			.call(position)
 			.sort(order);
+
+	function hideCurrentDot(data) {
+		currentInfo.style('display', 'none');
+	}
+	function showCurrentDot(data) {
+		currentInfo.style('display', 'block');
+		var coordinates = d3.mouse(this);
+		currentInfo
+			.attr('x', coordinates[0])
+			.attr('y', coordinates[1])
+			;
+		currentInfo.select('.currentInfoContent').html(
+			"<div>"+
+			"<span class='colorbox' style='background: "+
+			colorScale(data.code)+";'></span>"+
+			data.name+
+			"</div>"+
+			""
+		);
+	}
 
 	// Updates the display to show the specified date.
 	function displayDate(date) {
@@ -420,9 +452,6 @@ GapMinder.oncreate = function(vn) {
 		});
 	}
 	self.loadData = function() {
-		// Add a title.
-		dot.append("title")
-			.text(function(d) { return d.name; });
 
 		// Add an overlay for the date label.
 		var dateBox = dateLabel.node().getBBox();
