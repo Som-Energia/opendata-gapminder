@@ -528,6 +528,7 @@ GapMinder.view = function(vn) {
 };
 
 const Select = require('./mdc/select');
+const Button = require('./mdc/button');
 const Layout = require('./mdc/layout');
 const Row = Layout.Row;
 const Cell = Layout.Cell;
@@ -538,24 +539,23 @@ GapMinder.Example.xmetric = 'contracts';
 GapMinder.Example.ymetric = 'members';
 GapMinder.Example.rmetric = 'members_change';
 GapMinder.Example.view = function(vn) {
-	return m('', [
-		m(GapMinder, {
-			api: GapMinder.Example.api,
-			xmetric: GapMinder.Example.xmetric,
-			ymetric: GapMinder.Example.ymetric,
-			rmetric: GapMinder.Example.rmetric,
-			style: {
-				height: '800px',
-			},
-		}),
-		m('button', {
-			onclick: function() { GapMinder.Example.api.play();},
-		},_('Play')),
-		m('button', {
-			onclick: function() { GapMinder.Example.api.pause();},
-		},_('Pause')),
+	return m(Layout, [
 		m(Row, [
-			m(Cell, {span: 4}, m(Select, {
+			m(Cell, {span: 3},
+				m(Button, {
+					faicon: 'play',
+					outlined: true,
+					style: {width: '50%'},
+					onclick: function() { GapMinder.Example.api.play();},
+				},_('Play')),
+				m(Button, {
+					faicon: 'pause',
+					outlined: true,
+					style: {width: '50%'},
+					onclick: function() { GapMinder.Example.api.pause();},
+				},_('Pause')),
+			),
+			m(Cell, {span: 3}, m(Select, {
 				label: _('Eje X'),
 				options: metricOptions,
 				required: true,
@@ -567,7 +567,7 @@ GapMinder.Example.view = function(vn) {
 					GapMinder.Example.api.setX(metric);
 				},
 			})),
-			m(Cell, {span: 4}, m(Select, {
+			m(Cell, {span: 3}, m(Select, {
 				label: _('Eje Y'),
 				options: metricOptions,
 				required: true,
@@ -578,7 +578,7 @@ GapMinder.Example.view = function(vn) {
 					GapMinder.Example.api.setY(metric);
 				},
 			})),
-			m(Cell, {span: 4}, m(Select, {
+			m(Cell, {span: 3}, m(Select, {
 				label: _('Radio'),
 				options: metricOptions,
 				required: true,
@@ -589,7 +589,16 @@ GapMinder.Example.view = function(vn) {
 					GapMinder.Example.api.setR(metric);
 				},
 			})),
-		])
+		]),
+		m(Row, m(Cell, {span: 12}, m(GapMinder, {
+			api: GapMinder.Example.api,
+			xmetric: GapMinder.Example.xmetric,
+			ymetric: GapMinder.Example.ymetric,
+			rmetric: GapMinder.Example.rmetric,
+			style: {
+				height: '750px',
+			},
+		}))),
 	]);
 };
 
