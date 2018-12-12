@@ -388,12 +388,21 @@ GapMinder.oncreate = function(vn) {
 		currentInfo.style('display', 'none');
 	}
 	function showCurrentDot(data) {
+		const cursorSize = 20;
+		const infoWidth = 300; // TODO: Should be 20em as the css .currentInfo width
+		const infoHeight = 120; // TODO: Should be ...whatever it is
 		currentInfo.style('display', 'block');
 		var coordinates = d3.mouse(this);
-		// TODO: Consider boundary conditions
+		var x = coordinates[0]+20;
+		if (x+infoWidth>width) {
+			x = width - infoWidth;
+		}
+		var y = coordinates[1]+20;
+		if (y+infoHeight>height)
+			y = height - infoHeight;
 		currentInfo
-			.attr('x', coordinates[0]+20)
-			.attr('y', coordinates[1]+20)
+			.attr('x', x)
+			.attr('y', y)
 			;
 		// TODO: Bisect instead of interpolate
 		currentInfo.select('.currentInfoContent').html(
