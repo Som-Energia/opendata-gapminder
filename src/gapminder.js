@@ -57,14 +57,6 @@ function appendPool(target, metric, context, dates, parentCode, level) {
 		appendPool(target, metric, child.states, dates, code, 'states');
 	});
 }
-var pools = {};
-Object.keys(contracts.countries).map(function(countryCode) {
-	appendPool(pools, 'contracts', contracts.countries, contracts.dates, countryCode, 'ccaas');
-	appendPool(pools, 'members', members.countries, members.dates, countryCode, 'ccaas');
-});
-var pool = Object.keys(pools.ccaas).map(function (k) { return pools.ccaas[k]; });
-
-
 var metrics = {
 	contracts: _('Contratos'),
 	contracts_change: _('Nuevos contratos'), 
@@ -73,6 +65,24 @@ var metrics = {
 	members_change: _('Nuevas personas socias'),
 	members_per1M: _('Personas socias por millón de habitantes'),
 };
+
+var pools = {};
+Object.keys(contracts.countries).map(function(countryCode) {
+	appendPool(pools, 'contracts', contracts.countries, contracts.dates, countryCode, 'ccaas');
+	appendPool(pools, 'members', members.countries, members.dates, countryCode, 'ccaas');
+});
+var pool = Object.keys(pools.ccaas).map(function (k) { return pools.ccaas[k]; });
+
+var metricExtents = {};
+Object.keys(metrics).map(function(metric) {
+	var values = Object.keys(pools.ccaas).map(function(key) {
+		return d3.extent(pools.ccaas[key][metric] || []);
+	})
+	metricExtents[metric] = d3.extent(d3.merge(values));
+});
+console.log(metricExtents);
+
+
 var metricOptions = Object.keys(metrics).map(function(key) {
 	return {
 		value: key,
