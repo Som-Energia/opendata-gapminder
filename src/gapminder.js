@@ -390,15 +390,29 @@ GapMinder.oncreate = function(vn) {
 	function showCurrentDot(data) {
 		currentInfo.style('display', 'block');
 		var coordinates = d3.mouse(this);
+		// TODO: Consider boundary conditions
 		currentInfo
-			.attr('x', coordinates[0])
-			.attr('y', coordinates[1])
+			.attr('x', coordinates[0]+20)
+			.attr('y', coordinates[1]+20)
 			;
+		// TODO: Bisect instead of interpolate
 		currentInfo.select('.currentInfoContent').html(
 			"<div>"+
 			"<span class='colorbox' style='background: "+
 			colorScale(data.code)+";'></span>"+
 			data.name+
+			"</div>"+
+			"<div><b>Month:</b> "+
+			self.currentDate.toISOString().slice(0,7)+
+			"</div>"+
+			"<div><b>"+metrics[self.parameters.x]+":</b> "+
+			Math.round(data[self.parameters.x])+
+			"</div>"+
+			"<div><b>"+metrics[self.parameters.y]+":</b> "+
+			Math.round(data[self.parameters.y])+
+			"</div>"+
+			"<div><b>"+metrics[self.parameters.r]+":</b> "+
+			Math.round(data[self.parameters.r])+
 			"</div>"+
 			""
 		);
