@@ -266,7 +266,8 @@ GapMinder.oncreate = function(vn) {
 		.attr("text-anchor", "start")
 		.attr("y", 0)
 		.attr("x", 24)
-		.text('0000-00');
+		.text('0000-00')
+		;
 
 	var dateBox = dateLabel.node().getBBox();
 	dateLabel.attr("y", dateBox.height-32);
@@ -411,7 +412,7 @@ GapMinder.oncreate = function(vn) {
 			colorScale(data.code)+";'></span>"+
 			data.name+
 			"</div>"+
-			"<div><b>Month:</b> "+
+			"<div><b>"+_("Mes:")+"</b> "+
 			self.currentDate.toISOString().slice(0,7)+
 			"</div>"+
 			"<div><b>"+metrics[self.parameters.x]+":</b> "+
