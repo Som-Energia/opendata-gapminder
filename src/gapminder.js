@@ -14,8 +14,9 @@ function diff(array) {
 		return result;
 	});
 }
-
+// https://opendata.somenergia.coop/v0.2/contracts/by/ccaa/monthly
 var contracts = require('./data/contracts_ccaa_monthly.yaml');
+// https://opendata.somenergia.coop/v0.2/members/by/ccaa/monthly
 var members = require('./data/members_ccaa_monthly.yaml');
 var populationTsv = require('dsv-loader?delimiter=\t!./data/poblacio_ccaa-20140101.csv');
 var populationCCAA = {};
