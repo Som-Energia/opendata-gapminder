@@ -3,7 +3,10 @@
 var d3 = require('d3');
 var m = require('mithril');
 const _ = require('./translate');
+var css = require('./style.styl');
 require('./gapminder.styl');
+require('font-awesome/css/font-awesome.css');
+require('@material/typography/dist/mdc.typography.css').default;
 
 
 function diff(array) {
@@ -637,6 +640,18 @@ GapMinder.Example.view = function(vn) {
 	]);
 };
 
+var Main = {
+    view: function(vn) {
+		return m('.form.mdc-typography', [
+            m(GapMinder.Example)
+        ]);
+    },
+};
 
-module.exports=GapMinder;
+window.onload = function() {
+	var element = document.getElementById("mithril-target");
+	m.mount(element, Main);
+};
 
+
+// vim: noet ts=4 sw=4
