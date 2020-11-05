@@ -597,7 +597,6 @@ GapMinder.Example.view = function(vn) {
 				label: _('Eje X'),
 				options: metricOptions,
 				required: true,
-				value: 'contracts',
 				value: GapMinder.Example.xmetric,
 				onchange: function(ev) {
 					var metric = ev.target.value;
