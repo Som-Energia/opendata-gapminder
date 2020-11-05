@@ -7,6 +7,43 @@ var css = require('./style.styl');
 require('./gapminder.styl');
 require('font-awesome/css/font-awesome.css');
 require('@material/typography/dist/mdc.typography.css').default;
+var yaml = require('js-yaml');
+
+var apibase = 'https://opendata.somenergia.coop/v0.2';
+var apibase = 'http://localhost:5001/v0.2';
+
+function fetchyaml(uri) {
+	return d3.text(uri)
+		.then(response => {console.debug(response); return response})
+		.then(text =>  {console.debug(text); return yaml.safeLoad(text)})
+}
+
+
+var OpenData = {}
+OpenData.metrics = {
+	contracts: _('Contratos'),
+	contracts_change: _('Nuevos contratos'), 
+	contracts_per1M: _('Contratos por millón de habitantes'),
+	members: _('Personas socias'),
+	members_change: _('Nuevas personas socias'),
+	members_per1M: _('Personas socias por millón de habitantes'),
+};
+
+OpenData.downloadMetrics = function() {
+	return fetchyaml(apibase + '/introspection/metrics')
+		.then(object => {
+			console.debug(object);
+			OpenData.metrics = {};
+			object.metrics.map(o => {
+				OpenData.metrics[o.id] = o.text;
+				OpenData.metrics[o.id + '_change'] = _('Incremento en ') + o.text;
+				OpenData.metrics[o.id + '_per1M'] = o.text + _(' por millón de habitantes');
+			})
+		})
+}
+
+OpenData.downloadMetrics()
+
 
 
 function diff(array) {
@@ -61,14 +98,6 @@ function appendPool(target, metric, context, dates, parentCode, level) {
 		appendPool(target, metric, child.states, dates, code, 'states');
 	});
 }
-var metrics = {
-	contracts: _('Contratos'),
-	contracts_change: _('Nuevos contratos'), 
-	contracts_per1M: _('Contratos por millón de habitantes'),
-	members: _('Personas socias'),
-	members_change: _('Nuevas personas socias'),
-	members_per1M: _('Personas socias por millón de habitantes'),
-};
 
 var pools = {};
 Object.keys(contracts.countries).map(function(countryCode) {
@@ -78,21 +107,13 @@ Object.keys(contracts.countries).map(function(countryCode) {
 var pool = Object.keys(pools.ccaas).map(function (k) { return pools.ccaas[k]; });
 
 var metricExtents = {};
-Object.keys(metrics).map(function(metric) {
+Object.keys(OpenData.metrics).map(function(metric) {
 	var values = Object.keys(pools.ccaas).map(function(key) {
 		return d3.extent(pools.ccaas[key][metric] || []);
 	})
 	metricExtents[metric] = d3.extent(d3.merge(values));
 });
 console.log(metricExtents);
-
-
-var metricOptions = Object.keys(metrics).map(function(key) {
-	return {
-		value: key,
-		text: metrics[key],
-	};
-});
 
 const GapMinder = {};
 GapMinder.oninit = function(vn) {
@@ -211,7 +232,7 @@ GapMinder.oncreate = function(vn) {
 		.attr("text-anchor", "end")
 		.attr("x", width)
 		.attr("y", height - axisLabelMargin)
-		.text(metrics[self.parameters.x]);
+		.text(OpenData.metrics[self.parameters.x]);
 
 	// Add a y-axis label.
 	self.yLabel = view.append("text")
@@ -221,7 +242,7 @@ GapMinder.oncreate = function(vn) {
 		.attr("x", "-1em")
 		.attr("dy", ".75em")
 		.attr("transform", "rotate(-90)")
-		.text(metrics[self.parameters.y]);
+		.text(OpenData.metrics[self.parameters.y]);
 
 	// Add grids
 	var xGridAxis = d3.axisBottom()
@@ -325,12 +346,12 @@ GapMinder.oncreate = function(vn) {
 
 	self.setXMetric = function(metric) {
 		self.parameters.x = metric;
-		self.xLabel.text(metrics[metric]);
+		self.xLabel.text(OpenData.metrics[metric]);
 		resetXAxis(self.xScale);
 	};
 	self.setYMetric = function(metric) {
 		self.parameters.y = metric;
-		self.yLabel.text(metrics[metric]);
+		self.yLabel.text(OpenData.metrics[metric]);
 		resetYAxis(self.yScale);
 	};
 	self.setYLinear = function() {
@@ -429,13 +450,13 @@ GapMinder.oncreate = function(vn) {
 			"<div><b>"+_("Mes:")+"</b> "+
 			self.currentDate.toISOString().slice(0,7)+
 			"</div>"+
-			"<div><b>"+metrics[self.parameters.x]+":</b> "+
+			"<div><b>"+OpenData.metrics[self.parameters.x]+":</b> "+
 			Math.round(data[self.parameters.x])+
 			"</div>"+
-			"<div><b>"+metrics[self.parameters.y]+":</b> "+
+			"<div><b>"+OpenData.metrics[self.parameters.y]+":</b> "+
 			Math.round(data[self.parameters.y])+
 			"</div>"+
-			"<div><b>"+metrics[self.parameters.r]+":</b> "+
+			"<div><b>"+OpenData.metrics[self.parameters.r]+":</b> "+
 			Math.round(data[self.parameters.r])+
 			"</div>"+
 			""
@@ -577,6 +598,13 @@ GapMinder.Example.xmetric = 'contracts';
 GapMinder.Example.ymetric = 'members';
 GapMinder.Example.rmetric = 'members_change';
 GapMinder.Example.view = function(vn) {
+	var metricOptions = Object.keys(OpenData.metrics).map(function(key) {
+		return {
+			value: key,
+			text: OpenData.metrics[key],
+		};
+	});
+
 	return m(Layout, [
 		m(Row, [
 			m(Cell, {span: 3},
