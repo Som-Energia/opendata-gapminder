@@ -29,20 +29,20 @@ OpenData.metrics = {
 	members_per1M: _('Personas socias por millón de habitantes'),
 };
 
-OpenData.downloadMetrics = function() {
+OpenData.loadAvailableMetrics = function() {
 	return fetchyaml(apibase + '/introspection/metrics')
 		.then(object => {
 			console.debug(object);
 			OpenData.metrics = {};
 			object.metrics.map(o => {
 				OpenData.metrics[o.id] = o.text;
-				OpenData.metrics[o.id + '_change'] = _('Incremento en ') + o.text;
+				OpenData.metrics[o.id + '_change'] = _('Incremento de ') + o.text;
 				OpenData.metrics[o.id + '_per1M'] = o.text + _(' por millón de habitantes');
 			})
 		})
 }
 
-OpenData.downloadMetrics()
+OpenData.loadAvailableMetrics()
 
 
 
