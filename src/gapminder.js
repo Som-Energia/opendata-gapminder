@@ -46,14 +46,6 @@ OpenData.loadAvailableMetrics = function() {
 
 OpenData.loadAvailableMetrics()
 
-function diff(array) {
-	var previous = 0;
-	return array.map(function (v) {
-		var result = v - previous;
-		previous = v;
-		return result;
-	});
-}
 OpenData.loadRelativeMetrics = function() {
 	// TODO: This should be taken from API
 	const populationTsv = require('dsv-loader?delimiter=\t!./data/poblacio_ccaa-20140101.csv');
@@ -75,6 +67,14 @@ OpenData.members.dates=OpenData.members.dates.map(function(d) { return new Date(
 var dates = OpenData.contracts.dates;
 
 function appendPool(target, metric, context, parentCode, level) {
+	function diff(array) {
+		var previous = 0;
+		return array.map(function (v) {
+			var result = v - previous;
+			previous = v;
+			return result;
+		});
+	}
 	if (context===undefined) return;
 	var children = context[parentCode][level];
 	if (target[level] === undefined) {
@@ -99,7 +99,7 @@ function appendPool(target, metric, context, parentCode, level) {
 		childTarget[metric+'_change'] = diff(child.values);
 		childTarget[metric+'_per1M'] = child.values.map(function(v) {
 			return 1000000*v/population;
-			});
+		});
 		appendPool(target, metric, child.states, code, 'states');
 	});
 }
