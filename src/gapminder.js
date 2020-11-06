@@ -46,8 +46,6 @@ OpenData.loadAvailableMetrics = function() {
 
 OpenData.loadAvailableMetrics()
 
-
-
 function diff(array) {
 	var previous = 0;
 	return array.map(function (v) {
@@ -56,14 +54,16 @@ function diff(array) {
 		return result;
 	});
 }
-
-var populationTsv = require('dsv-loader?delimiter=\t!./data/poblacio_ccaa-20140101.csv');
-var populationCCAA = {};
-populationTsv.map(function(v) {
-	v.population=parseInt(v.population_2014_01);
-	populationCCAA[v.code]=v;
-});
-
+OpenData.loadRelativeMetrics = function() {
+	// TODO: This should be taken from API
+	const populationTsv = require('dsv-loader?delimiter=\t!./data/poblacio_ccaa-20140101.csv');
+	OpenData.populationByCCAA = {};
+	populationTsv.map(function(v) {
+		v.population=parseInt(v.population_2014_01);
+		OpenData.populationByCCAA[v.code]=v;
+	});
+}
+OpenData.loadRelativeMetrics();
 
 // https://opendata.somenergia.coop/v0.2/contracts/by/ccaa/monthly
 OpenData.contracts = require('./data/contracts_ccaa_monthly.yaml');
@@ -90,9 +90,9 @@ function appendPool(target, metric, context, dates, parentCode, level) {
 				name: child.name,
 			};
 			childTarget.population=
-				level==='ccaas' && populationCCAA[code]!==undefined ?
-					populationCCAA[code].population:
-					populationCCAA['00'].population;
+				level==='ccaas' && OpenData.populationByCCAA[code]!==undefined ?
+					OpenData.populationByCCAA[code].population:
+					OpenData.populationByCCAA['00'].population;
 		}
 		var population = childTarget.population;
 		childTarget[metric] = child.values;
