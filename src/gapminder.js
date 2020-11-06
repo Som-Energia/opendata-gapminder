@@ -68,7 +68,10 @@ OpenData.contracts.dates=OpenData.contracts.dates.map(function(d) { return new D
 OpenData.members = require('./data/members_ccaa_monthly.yaml');
 OpenData.members.dates=OpenData.members.dates.map(function(d) { return new Date(d);})
 
-var dates = OpenData.contracts.dates;
+OpenData.dates = function() {
+	if (OpenData.contracts) return OpenData.contracts.dates;
+	return [Date("2010-01-01"), Date()];
+}
 
 function appendPool(target, metric, context, parentCode, level) {
 
@@ -109,6 +112,7 @@ function appendPool(target, metric, context, parentCode, level) {
 		appendPool(target, metric, child.states, code, 'states');
 	});
 }
+
 
 var pools = {};
 Object.keys(OpenData.contracts.countries).map(function(countryCode) {
@@ -319,7 +323,7 @@ GapMinder.oncreate = function(vn) {
 	dateLabel.attr("y", dateBox.height-32);
 	dateBox = dateLabel.node().getBBox();
 
-	var timeBounds = d3.extent(dates);
+	var timeBounds = d3.extent(OpenData.dates());
 	var dateScale = d3.scaleTime()
 		.domain(timeBounds)
 		.range([dateBox.x + 10, dateBox.x + dateBox.width - 10])
@@ -491,9 +495,9 @@ GapMinder.oncreate = function(vn) {
 
 	// Interpolates the dataset for the given date.
 	function interpolateData(date) {
-		var i = d3.bisectLeft(dates, date, 0, dates.length - 1);
+		var i = d3.bisectLeft(OpenData.dates(), date, 0, OpenData.dates().length - 1);
 		var factor = i>0?
-			(date - dates[i]) / (dates[i-1] - dates[i]):
+			(date - OpenData.dates()[i]) / (OpenData.dates()[i-1] - OpenData.dates()[i]):
 			0;
 		return pool.map(function(object) {
 			function interpolate(source) {
