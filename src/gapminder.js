@@ -57,7 +57,7 @@ function diff(array) {
 	});
 }
 // https://opendata.somenergia.coop/v0.2/contracts/by/ccaa/monthly
-var contracts = require('./data/contracts_ccaa_monthly.yaml');
+OpenData.contracts = require('./data/contracts_ccaa_monthly.yaml');
 // https://opendata.somenergia.coop/v0.2/members/by/ccaa/monthly
 OpenData.members = require('./data/members_ccaa_monthly.yaml');
 var populationTsv = require('dsv-loader?delimiter=\t!./data/poblacio_ccaa-20140101.csv');
@@ -67,9 +67,9 @@ populationTsv.map(function(v) {
 	populationCCAA[v.code]=v;
 });
 console.log(populationCCAA);
-contracts.dates=contracts.dates.map(function(d) { return new Date(d);})
+OpenData.contracts.dates=OpenData.contracts.dates.map(function(d) { return new Date(d);})
 OpenData.members.dates=OpenData.members.dates.map(function(d) { return new Date(d);})
-var dates = contracts.dates;
+var dates = OpenData.contracts.dates;
 
 function appendPool(target, metric, context, dates, parentCode, level) {
 	if (context===undefined) return;
@@ -102,8 +102,8 @@ function appendPool(target, metric, context, dates, parentCode, level) {
 }
 
 var pools = {};
-Object.keys(contracts.countries).map(function(countryCode) {
-	appendPool(pools, 'contracts', contracts.countries, contracts.dates, countryCode, 'ccaas');
+Object.keys(OpenData.contracts.countries).map(function(countryCode) {
+	appendPool(pools, 'contracts', OpenData.contracts.countries, OpenData.contracts.dates, countryCode, 'ccaas');
 	appendPool(pools, 'members', OpenData.members.countries, OpenData.members.dates, countryCode, 'ccaas');
 });
 var pool = Object.keys(pools.ccaas).map(function (k) { return pools.ccaas[k]; });
@@ -167,12 +167,12 @@ GapMinder.oncreate = function(vn) {
 
 	// Various scales. These domains make assumptions of data, naturally.
 	var xScaleLog = d3.scaleLog()
-		.domain([1,d3.max(contracts.values)])
+		.domain([1,d3.max(OpenData.contracts.values)])
 		.range([10, width])
 		.clamp(true)
 		;
 	var xScaleLinear = d3.scaleLinear()
-		.domain(d3.extent(contracts.values))
+		.domain(d3.extent(OpenData.contracts.values))
 		.range([10, width])
 		.clamp(true)
 		;
