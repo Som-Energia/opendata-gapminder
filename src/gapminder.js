@@ -72,7 +72,11 @@ OpenData.dates = function() {
 	if (OpenData.contracts) {
 		return OpenData.contracts.dates;
 	}
-	return [Date("2010-01-01"), Date()];
+	return [
+		new Date("2010-01-01"),
+		new Date("2015-01-01"),
+		new Date("2021-01-01"),
+	];
 }
 
 function appendPool(target, metric, context, parentCode, level) {
@@ -488,7 +492,8 @@ GapMinder.oncreate = function(vn) {
 			.call(position)
 			.sort(order)
 			;
-		dateLabel.text(date.toISOString().slice(0,7));
+		var dateText = date.toISOString().slice(0,7);
+		dateLabel.text(dateText);
 		timePoint
 			.attr('x1', dateScale(self.currentDate))
 			.attr('x2', dateScale(self.currentDate))
