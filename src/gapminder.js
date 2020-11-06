@@ -69,7 +69,9 @@ OpenData.members = require('./data/members_ccaa_monthly.yaml');
 OpenData.members.dates=OpenData.members.dates.map(function(d) { return new Date(d);})
 
 OpenData.dates = function() {
-	if (OpenData.contracts) return OpenData.contracts.dates;
+	if (OpenData.contracts) {
+		return OpenData.contracts.dates;
+	}
 	return [Date("2010-01-01"), Date()];
 }
 
