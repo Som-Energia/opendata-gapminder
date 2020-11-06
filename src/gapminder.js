@@ -30,11 +30,13 @@ OpenData.metrics = {
 };
 
 OpenData.loadAvailableMetrics = function() {
+	OpenData.basicMetrics = {};
 	return fetchyaml(apibase + '/introspection/metrics')
-		.then(object => {
-			console.debug(object);
+		.then(result => {
+			OpenData.basicMetrics = result;
+			console.debug(result);
 			OpenData.metrics = {};
-			object.metrics.map(o => {
+			result.metrics.map(o => {
 				OpenData.metrics[o.id] = o.text;
 				OpenData.metrics[o.id + '_change'] = _('Incremento de ') + o.text;
 				OpenData.metrics[o.id + '_per1M'] = o.text + _(' por millón de habitantes');
