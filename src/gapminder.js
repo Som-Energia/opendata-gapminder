@@ -28,7 +28,10 @@ OpenData.metrics = {
 	members_change: _('Nuevas personas socias'),
 	members_per1M: _('Personas socias por millón de habitantes'),
 };
-OpenData.basicMetrics = {};
+OpenData.basicMetrics = [
+	{id: 'members', text: _('Personas socias') },
+	{id: 'contracts', text: _('Contratos') },
+];
 OpenData.loadAvailableMetrics = function() {
 	return fetchyaml(apibase + '/introspection/metrics')
 		.then(result => {
