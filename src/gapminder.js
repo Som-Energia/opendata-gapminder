@@ -59,7 +59,7 @@ function diff(array) {
 // https://opendata.somenergia.coop/v0.2/contracts/by/ccaa/monthly
 var contracts = require('./data/contracts_ccaa_monthly.yaml');
 // https://opendata.somenergia.coop/v0.2/members/by/ccaa/monthly
-var members = require('./data/members_ccaa_monthly.yaml');
+OpenData.members = require('./data/members_ccaa_monthly.yaml');
 var populationTsv = require('dsv-loader?delimiter=\t!./data/poblacio_ccaa-20140101.csv');
 var populationCCAA = {};
 populationTsv.map(function(v) {
@@ -68,7 +68,7 @@ populationTsv.map(function(v) {
 });
 console.log(populationCCAA);
 contracts.dates=contracts.dates.map(function(d) { return new Date(d);})
-members.dates=members.dates.map(function(d) { return new Date(d);})
+OpenData.members.dates=OpenData.members.dates.map(function(d) { return new Date(d);})
 var dates = contracts.dates;
 
 function appendPool(target, metric, context, dates, parentCode, level) {
@@ -104,7 +104,7 @@ function appendPool(target, metric, context, dates, parentCode, level) {
 var pools = {};
 Object.keys(contracts.countries).map(function(countryCode) {
 	appendPool(pools, 'contracts', contracts.countries, contracts.dates, countryCode, 'ccaas');
-	appendPool(pools, 'members', members.countries, members.dates, countryCode, 'ccaas');
+	appendPool(pools, 'members', OpenData.members.countries, OpenData.members.dates, countryCode, 'ccaas');
 });
 var pool = Object.keys(pools.ccaas).map(function (k) { return pools.ccaas[k]; });
 
@@ -179,18 +179,18 @@ GapMinder.oncreate = function(vn) {
 	self.xScale = xScaleLog;
 
 	var yScaleLog = d3.scaleLog()
-		.domain([1,d3.max(members.values)])
+		.domain([1,d3.max(OpenData.members.values)])
 		.range([height, 10])
 		.clamp(true)
 		;
 	var yScaleLinear = d3.scaleLinear()
-		.domain(d3.extent(members.values))
+		.domain(d3.extent(OpenData.members.values))
 		.range([height, 10])
 		.clamp(true)
 		;
 	self.yScale = yScaleLog;
 	var radiusScale = d3.scaleSqrt()
-		.domain(d3.extent(members.values))
+		.domain(d3.extent(OpenData.members.values))
 		.range([5, 200])
 		;
 	var colorScale = d3.scaleOrdinal(d3.schemeAccent);
