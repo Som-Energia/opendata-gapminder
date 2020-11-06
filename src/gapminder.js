@@ -56,19 +56,22 @@ function diff(array) {
 		return result;
 	});
 }
-// https://opendata.somenergia.coop/v0.2/contracts/by/ccaa/monthly
-OpenData.contracts = require('./data/contracts_ccaa_monthly.yaml');
-// https://opendata.somenergia.coop/v0.2/members/by/ccaa/monthly
-OpenData.members = require('./data/members_ccaa_monthly.yaml');
+
 var populationTsv = require('dsv-loader?delimiter=\t!./data/poblacio_ccaa-20140101.csv');
 var populationCCAA = {};
 populationTsv.map(function(v) {
 	v.population=parseInt(v.population_2014_01);
 	populationCCAA[v.code]=v;
 });
-console.log(populationCCAA);
+
+
+// https://opendata.somenergia.coop/v0.2/contracts/by/ccaa/monthly
+OpenData.contracts = require('./data/contracts_ccaa_monthly.yaml');
 OpenData.contracts.dates=OpenData.contracts.dates.map(function(d) { return new Date(d);})
+// https://opendata.somenergia.coop/v0.2/members/by/ccaa/monthly
+OpenData.members = require('./data/members_ccaa_monthly.yaml');
 OpenData.members.dates=OpenData.members.dates.map(function(d) { return new Date(d);})
+
 var dates = OpenData.contracts.dates;
 
 function appendPool(target, metric, context, dates, parentCode, level) {
