@@ -74,7 +74,7 @@ OpenData.members.dates=OpenData.members.dates.map(function(d) { return new Date(
 
 var dates = OpenData.contracts.dates;
 
-function appendPool(target, metric, context, dates, parentCode, level) {
+function appendPool(target, metric, context, parentCode, level) {
 	if (context===undefined) return;
 	var children = context[parentCode][level];
 	if (target[level] === undefined) {
@@ -100,17 +100,18 @@ function appendPool(target, metric, context, dates, parentCode, level) {
 		childTarget[metric+'_per1M'] = child.values.map(function(v) {
 			return 1000000*v/population;
 			});
-		appendPool(target, metric, child.states, dates, code, 'states');
+		appendPool(target, metric, child.states, code, 'states');
 	});
 }
 
 var pools = {};
 Object.keys(OpenData.contracts.countries).map(function(countryCode) {
-	appendPool(pools, 'contracts', OpenData.contracts.countries, OpenData.contracts.dates, countryCode, 'ccaas');
-	appendPool(pools, 'members', OpenData.members.countries, OpenData.members.dates, countryCode, 'ccaas');
+	appendPool(pools, 'contracts', OpenData.contracts.countries, countryCode, 'ccaas');
+	appendPool(pools, 'members', OpenData.members.countries, countryCode, 'ccaas');
 });
 var pool = Object.keys(pools.ccaas).map(function (k) { return pools.ccaas[k]; });
 
+// TODO: Use this. Change extents when metric changes
 var metricExtents = {};
 Object.keys(OpenData.metrics).map(function(metric) {
 	var values = Object.keys(pools.ccaas).map(function(key) {
@@ -118,7 +119,6 @@ Object.keys(OpenData.metrics).map(function(metric) {
 	})
 	metricExtents[metric] = d3.extent(d3.merge(values));
 });
-console.log(metricExtents);
 
 const GapMinder = {};
 GapMinder.oninit = function(vn) {
