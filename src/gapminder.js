@@ -20,7 +20,6 @@ function fetchyaml(uri) {
 
 
 var OpenData = {}
-
 OpenData.loadRelativeMetrics = function() {
 	// TODO: This should be taken from API
 	const populationTsv = require('dsv-loader?delimiter=\t!./data/poblacio_ccaa-20140101.csv');
@@ -44,17 +43,43 @@ OpenData.basicMetrics = [
 	{id: 'members', text: _('Personas socias') },
 	{id: 'contracts', text: _('Contratos') },
 ];
+OpenData.pools = {};
+OpenData.selectedPool = []
 OpenData.loadAvailableMetrics = function() {
 	return fetchyaml(apibase + '/introspection/metrics')
 		.then(result => {
+			console.debug("metrics fetched", result)
 			OpenData.basicMetrics = result;
-			console.debug(result);
 			OpenData.metrics = {};
-			result.metrics.map(o => {
+			OpenData.metricdata = {};
+			return Promise.all(result.metrics.map(o => {
 				OpenData.metrics[o.id] = o.text;
 				OpenData.metrics[o.id + '_change'] = _('Incremento de ') + o.text;
 				OpenData.metrics[o.id + '_per1M'] = o.text + _(' por millón de habitantes');
-			})
+				return fetchyaml(apibase + '/'+ o.id + '/by/ccaa/monthly')
+					.then(metricdata => {
+						console.log("Loaded data from", o.id)
+						// Api returns dates as strings, turn them dates
+						metricdata.dates = metricdata.dates.map(function(d) { return new Date(d);})
+						Object.keys(metricdata.countries).map(function(countryCode) {
+							appendPool(o.id, metricdata.countries, countryCode, 'ccaas');
+						})
+						OpenData.metricdata[o.id] = metricdata;
+						return metricdata;
+					})
+			}))
+		})
+		.then(metricsData => {
+			// TODO: Use this. Change extents when metric changes
+			var metricExtents = {};
+			Object.keys(OpenData.metrics).map(function(metric) {
+				var values = Object.keys(OpenData.pools.ccaas).map(function(key) {
+					return d3.extent(OpenData.pools.ccaas[key][metric] || []);
+				})
+				metricExtents[metric] = d3.extent(d3.merge(values));
+			});
+			// TODO: Reload data
+			OpenData.selectedPool = Object.keys(OpenData.pools.ccaas).map(function (k) { return OpenData.pools.ccaas[k]; });
 			m.redraw();
 		})
 }
@@ -66,20 +91,21 @@ OpenData.contracts = require('./data/contracts_ccaa_monthly.yaml');
 OpenData.contracts.dates=OpenData.contracts.dates.map(function(d) { return new Date(d);})
 // https://opendata.somenergia.coop/v0.2/members/by/ccaa/monthly
 OpenData.members = require('./data/members_ccaa_monthly.yaml');
-OpenData.members.dates=OpenData.members.dates.map(function(d) { return new Date(d);})
+//OpenData.members.dates=OpenData.members.dates.map(function(d) { return new Date(d);})
 
 OpenData.dates = function() {
-	if (OpenData.contracts) {
-		return OpenData.contracts.dates;
+	return OpenData.contracts.dates;
+	if (OpenData.metricdata && OpenData.metricdata.contracts) {
+		return OpenData.metricdata.contracts.dates;
 	}
 	return [
 		new Date("2010-01-01"),
 		new Date("2015-01-01"),
-		new Date("2021-01-01"),
+		new Date("2020-10-01"),
 	];
 }
 
-function appendPool(target, metric, context, parentCode, level) {
+function appendPool(metric, context, parentCode, level) {
 
 	function diff(array) {
 		var previous = 0;
@@ -92,49 +118,44 @@ function appendPool(target, metric, context, parentCode, level) {
 
 	if (context===undefined) return;
 	var children = context[parentCode][level];
-	if (target[level] === undefined) {
-		target[level] = {};
+	if (OpenData.pools[level] === undefined) {
+		OpenData.pools[level] = {};
 	}
 	Object.keys(children).map(function(code) {
 		var child = children[code];
-		var childTarget = target[level][code];
+		var childTarget = OpenData.pools[level][code];
 		if (!childTarget) {
-			childTarget = target[level][code] = {
+			childTarget = OpenData.pools[level][code] = {
 				parent: parentCode,
 				code: code,
 				name: child.name,
 			};
-			childTarget.population=
-				level==='ccaas' && OpenData.populationByCCAA[code]!==undefined ?
-					OpenData.populationByCCAA[code].population:
-					OpenData.populationByCCAA['00'].population;
+			if (level==='ccaas') {
+				childTarget.population= OpenData.populationByCCAA[code]!==undefined ?
+						OpenData.populationByCCAA[code].population:
+						OpenData.populationByCCAA['00'].population;
+			}
 		}
-		var population = childTarget.population;
 		childTarget[metric] = child.values;
 		childTarget[metric+'_change'] = diff(child.values);
-		childTarget[metric+'_per1M'] = child.values.map(function(v) {
-			return 1000000*v/population;
-		});
-		appendPool(target, metric, child.states, code, 'states');
+		var population = childTarget.population;
+		if (population) {
+			childTarget[metric+'_per1M'] = child.values.map(function(v) {
+				return 1000000*v/population;
+			});
+		}
+		appendPool(metric, child.states, code, 'states');
 	});
 }
 
-
-var pools = {};
+/*
 Object.keys(OpenData.contracts.countries).map(function(countryCode) {
-	appendPool(pools, 'contracts', OpenData.contracts.countries, countryCode, 'ccaas');
-	appendPool(pools, 'members', OpenData.members.countries, countryCode, 'ccaas');
+	appendPool(OpenData.pools, 'contracts', OpenData.contracts.countries, countryCode, 'ccaas');
+	appendPool(OpenData.pools, 'members', OpenData.members.countries, countryCode, 'ccaas');
 });
-var pool = Object.keys(pools.ccaas).map(function (k) { return pools.ccaas[k]; });
+var pool = Object.keys(OpenData.pools.ccaas).map(function (k) { return OpenData.pools.ccaas[k]; });
 
-// TODO: Use this. Change extents when metric changes
-var metricExtents = {};
-Object.keys(OpenData.metrics).map(function(metric) {
-	var values = Object.keys(pools.ccaas).map(function(key) {
-		return d3.extent(pools.ccaas[key][metric] || []);
-	})
-	metricExtents[metric] = d3.extent(d3.merge(values));
-});
+*/
 
 const GapMinder = {};
 GapMinder.oninit = function(vn) {
@@ -428,18 +449,9 @@ GapMinder.oncreate = function(vn) {
 		return radius(b) - radius(a);
 	}
 	// Add a dot per nation. Initialize the data at 1800, and set the colors.
-	var dot = view.append("g")
+	var dots = view.append("g")
 		.attr("class", "dots")
-		.selectAll(".dot")
-		.data(interpolateData(self.currentDate))
-		.enter().append("circle")
-			.attr("class", "dot")
-			.style("fill", function(d) { return colorScale(color(d)); })
-			.on('mouseover', showCurrentDot)
-			.on('mousemove', showCurrentDot)
-			.on('mouseout', hideCurrentDot)
-			.call(position)
-			.sort(order);
+	;
 
 	function hideCurrentDot(data) {
 		currentInfo.style('display', 'none');
@@ -487,17 +499,34 @@ GapMinder.oncreate = function(vn) {
 	// Updates the display to show the specified date.
 	function displayDate(date) {
 		self.currentDate=date;
+		var dot = dots
+			.selectAll(".dot")
+			.data(interpolateData(date), key)
+		;
 		dot
+			.enter().append("circle")
+				.attr("class", "dot")
+				.style("fill", d => colorScale(color(d)))
+				.on('mouseover', showCurrentDot)
+				.on('mousemove', showCurrentDot)
+				.on('mouseout', hideCurrentDot)
+		;
+		dot
+			.exit().remove()
+		;
+		dots
+			.selectAll(".dot")
 			.data(interpolateData(date), key)
 			.call(position)
 			.sort(order)
-			;
+		;
 		var dateText = date.toISOString().slice(0,7);
 		dateLabel.text(dateText);
 		timePoint
 			.attr('x1', dateScale(self.currentDate))
 			.attr('x2', dateScale(self.currentDate))
 			;
+
 	}
 
 	// Interpolates the dataset for the given date.
@@ -506,7 +535,7 @@ GapMinder.oncreate = function(vn) {
 		var factor = i>0?
 			(date - OpenData.dates()[i]) / (OpenData.dates()[i-1] - OpenData.dates()[i]):
 			0;
-		return pool.map(function(object) {
+		return OpenData.selectedPool.map(function(object) {
 			function interpolate(source) {
 				if (i===0) return source[i];
 				return source[i] * (1-factor) + source[i-1] * factor;
