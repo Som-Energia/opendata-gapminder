@@ -14,8 +14,8 @@ var apibase = 'http://localhost:5001/v0.2';
 
 function fetchyaml(uri) {
 	return d3.text(uri)
-		.then(response => {console.debug(response); return response})
-		.then(text =>  {console.debug(text); return yaml.safeLoad(text)})
+		.then(response => {false && console.debug(response); return response})
+		.then(text =>  {false && console.debug(text); return yaml.safeLoad(text)})
 }
 
 
