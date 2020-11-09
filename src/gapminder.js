@@ -80,6 +80,7 @@ OpenData.loadAvailableMetrics = function() {
 			});
 			// TODO: Reload data
 			OpenData.selectedPool = Object.keys(OpenData.pools.ccaas).map(function (k) { return OpenData.pools.ccaas[k]; });
+			GapMinder.Example.api && GapMinder.Example.api.resetTimeAxis();
 			m.redraw();
 		})
 }
@@ -87,21 +88,20 @@ OpenData.loadAvailableMetrics = function() {
 OpenData.loadAvailableMetrics()
 
 // https://opendata.somenergia.coop/v0.2/contracts/by/ccaa/monthly
-OpenData.contracts = require('./data/contracts_ccaa_monthly.yaml');
-OpenData.contracts.dates=OpenData.contracts.dates.map(function(d) { return new Date(d);})
+//OpenData.contracts = require('./data/contracts_ccaa_monthly.yaml');
+//OpenData.contracts.dates=OpenData.contracts.dates.map(function(d) { return new Date(d);})
 // https://opendata.somenergia.coop/v0.2/members/by/ccaa/monthly
-OpenData.members = require('./data/members_ccaa_monthly.yaml');
-//OpenData.members.dates=OpenData.members.dates.map(function(d) { return new Date(d);})
+//OpenData.members = require('./data/members_ccaa_monthly.yaml');
 
 OpenData.dates = function() {
-	return OpenData.contracts.dates;
 	if (OpenData.metricdata && OpenData.metricdata.contracts) {
+		console.log("Reading actual dates")
 		return OpenData.metricdata.contracts.dates;
 	}
 	return [
-		new Date("2010-01-01"),
-		new Date("2015-01-01"),
-		new Date("2020-10-01"),
+		new Date("2020-01-01"),
+		new Date("2020-02-01"),
+		new Date("2020-03-01"),
 	];
 }
 
@@ -148,14 +148,7 @@ function appendPool(metric, context, parentCode, level) {
 	});
 }
 
-/*
-Object.keys(OpenData.contracts.countries).map(function(countryCode) {
-	appendPool(OpenData.pools, 'contracts', OpenData.contracts.countries, countryCode, 'ccaas');
-	appendPool(OpenData.pools, 'members', OpenData.members.countries, countryCode, 'ccaas');
-});
-var pool = Object.keys(OpenData.pools.ccaas).map(function (k) { return OpenData.pools.ccaas[k]; });
 
-*/
 
 const GapMinder = {};
 GapMinder.oninit = function(vn) {
@@ -170,7 +163,8 @@ GapMinder.oninit = function(vn) {
 	self.api.setYLog = function() { self.setYLog && self.setYLog(); };
 	self.api.setX = function(metric) { self.setXMetric(metric); };
 	self.api.setY = function(metric) { self.setYMetric(metric); };
-	self.api.setR = function(metric) { self.parameters.r = metric; };
+	self.api.setR = function(metric) { self.setRMetric(metric); };
+	self.api.resetTimeAxis = function() { self.resetTimeAxis(); }
 	self.parameters = {
 		x: 'contracts',
 		y: 'members',
@@ -207,30 +201,31 @@ GapMinder.oncreate = function(vn) {
 
 	// Various scales. These domains make assumptions of data, naturally.
 	var xScaleLog = d3.scaleLog()
-		.domain([1,d3.max(OpenData.contracts.values)])
+		.domain([1,200000])
 		.range([10, width])
 		.clamp(true)
 		;
 	var xScaleLinear = d3.scaleLinear()
-		.domain(d3.extent(OpenData.contracts.values))
+		.domain([0,200000])
 		.range([10, width])
 		.clamp(true)
 		;
 	self.xScale = xScaleLog;
 
 	var yScaleLog = d3.scaleLog()
-		.domain([1,d3.max(OpenData.members.values)])
+		.domain([1,200000])
 		.range([height, 10])
 		.clamp(true)
 		;
 	var yScaleLinear = d3.scaleLinear()
-		.domain(d3.extent(OpenData.members.values))
+		.domain([0,200000])
 		.range([height, 10])
 		.clamp(true)
 		;
 	self.yScale = yScaleLog;
+
 	var radiusScale = d3.scaleSqrt()
-		.domain(d3.extent(OpenData.members.values))
+		.domain([1,200000])
 		.range([5, 200])
 		;
 	var colorScale = d3.scaleOrdinal(d3.schemeAccent);
@@ -408,6 +403,9 @@ GapMinder.oncreate = function(vn) {
 	self.setXLog = function() {
 		resetXAxis(xScaleLog);
 	};
+	self.resetTimeAxis = function() {
+		resetTimeAxis();
+	}
 	function resetXAxis(scale) {
 		self.xScale = scale;
 		xGridAxis.scale(self.xScale);
@@ -435,6 +433,14 @@ GapMinder.oncreate = function(vn) {
 			.call(yGridAxis)
 			;
 		displayDate(self.currentDate);
+	}
+	function resetTimeAxis(scale) {
+		timeBounds = d3.extent(OpenData.dates());
+		dateScale.domain(timeBounds);
+		dateAxis.scale(dateScale);
+		// Add the date-axis.
+		d3.select(".time.axis")
+			.call(dateAxis);
 	}
 	// Positions the dots based on data.
 	function position(dot) {
