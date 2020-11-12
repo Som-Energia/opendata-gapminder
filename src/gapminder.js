@@ -441,6 +441,7 @@ GapMinder.oncreate = function(vn) {
 		// Add the date-axis.
 		d3.select(".time.axis")
 			.call(dateAxis);
+		displayDate(timeBounds[0]);
 	}
 	// Positions the dots based on data.
 	function position(dot) {
