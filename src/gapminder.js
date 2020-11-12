@@ -90,13 +90,12 @@ OpenData.loadAvailableMetrics()
 
 OpenData.dates = function() {
 	if (OpenData.metricdata && OpenData.metricdata.contracts) {
-		console.log("Reading actual dates")
 		return OpenData.metricdata.contracts.dates;
 	}
 	return [
-		new Date("2020-01-01"),
-		new Date("2020-02-01"),
-		new Date("2020-03-01"),
+		new Date("2010-01-01"),
+		new Date("2010-02-01"),
+		new Date("2010-03-01"),
 	];
 }
 
