@@ -88,12 +88,6 @@ OpenData.loadAvailableMetrics = function() {
 
 OpenData.loadAvailableMetrics()
 
-// https://opendata.somenergia.coop/v0.2/contracts/by/ccaa/monthly
-//OpenData.contracts = require('./data/contracts_ccaa_monthly.yaml');
-//OpenData.contracts.dates=OpenData.contracts.dates.map(function(d) { return new Date(d);})
-// https://opendata.somenergia.coop/v0.2/members/by/ccaa/monthly
-//OpenData.members = require('./data/members_ccaa_monthly.yaml');
-
 OpenData.dates = function() {
 	if (OpenData.metricdata && OpenData.metricdata.contracts) {
 		console.log("Reading actual dates")
