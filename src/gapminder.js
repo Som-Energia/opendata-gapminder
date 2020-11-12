@@ -81,6 +81,7 @@ OpenData.loadAvailableMetrics = function() {
 			// TODO: Reload data
 			OpenData.selectedPool = Object.keys(OpenData.pools.ccaas).map(function (k) { return OpenData.pools.ccaas[k]; });
 			GapMinder.Example.api && GapMinder.Example.api.resetTimeAxis();
+			GapMinder.Example.api && GapMinder.Example.api.replay();
 			m.redraw();
 		})
 }
@@ -156,6 +157,7 @@ GapMinder.oninit = function(vn) {
 	// Exposed api
 	self.api = vn.attrs.api || {};
 	self.api.play = function() { self.play && self.play(); };
+	self.api.replay = function() { self.replay && self.replay(); };
 	self.api.pause = function() { self.pause && self.pause(); };
 	self.api.setXLinear = function() { self.setXLinear && self.setXLinear(); };
 	self.api.setXLog = function() { self.setXLog && self.setXLog(); };
