@@ -71,18 +71,23 @@ OpenData.loadAvailableMetrics = function() {
 		})
 		.then(metricsData => {
 			// TODO: Use this. Change extents when metric changes
-			var metricExtents = {};
+			OpenData.metricExtents = {};
 			Object.keys(OpenData.metrics).map(function(metric) {
-				var values = Object.keys(OpenData.pools.ccaas).map(function(key) {
-					return d3.extent(OpenData.pools.ccaas[key][metric] || []);
+				var values = Object.keys(OpenData.pools.ccaas).map(function(ccaa) {
+					return d3.extent(OpenData.pools.ccaas[ccaa][metric] || []);
 				})
-				metricExtents[metric] = d3.extent(d3.merge(values));
+				OpenData.metricExtents[metric] = d3.extent(d3.merge(values));
 			});
 			// TODO: Reload data
 			OpenData.selectedPool = Object.keys(OpenData.pools.ccaas).map(function (k) { return OpenData.pools.ccaas[k]; });
-			GapMinder.Example.api && GapMinder.Example.api.resetTimeAxis();
-			GapMinder.Example.api && GapMinder.Example.api.replay();
-			m.redraw();
+			if (GapMinder.Example.api) {
+				GapMinder.Example.api.resetTimeAxis();
+				GapMinder.Example.api.setX("members");
+				GapMinder.Example.api.setY("contracts");
+				GapMinder.Example.xmetric = "member";
+				GapMinder.Example.ymetric = "contracts";
+				GapMinder.Example.api.replay();
+			}
 		})
 }
 
@@ -379,11 +384,15 @@ GapMinder.oncreate = function(vn) {
 	self.setXMetric = function(metric) {
 		self.parameters.x = metric;
 		self.xLabel.text(OpenData.metrics[metric]);
+		xScaleLog.domain([1,OpenData.metricExtents[metric][1]]);
+		xScaleLinear.domain(OpenData.metricExtents[metric]);
 		resetXAxis(self.xScale);
 	};
 	self.setYMetric = function(metric) {
 		self.parameters.y = metric;
 		self.yLabel.text(OpenData.metrics[metric]);
+		yScaleLog.domain([1,OpenData.metricExtents[metric][1]]);
+		yScaleLinear.domain(OpenData.metricExtents[metric]);
 		resetYAxis(self.yScale);
 	};
 	self.setYLinear = function() {
