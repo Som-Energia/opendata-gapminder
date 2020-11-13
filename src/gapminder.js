@@ -32,12 +32,12 @@ OpenData.loadRelativeMetrics = function() {
 OpenData.loadRelativeMetrics();
 
 OpenData.metrics = {
-	contracts: _('Contratos'),
-	contracts_change: _('Nuevos contratos'), 
-	contracts_per1M: _('Contratos por millón de habitantes'),
 	members: _('Personas socias'),
 	members_change: _('Nuevas personas socias'),
 	members_per1M: _('Personas socias por millón de habitantes'),
+	contracts: _('Contratos'),
+	contracts_change: _('Nuevos contratos'),
+	contracts_per1M: _('Contratos por millón de habitantes'),
 };
 OpenData.basicMetrics = [
 	{id: 'members', text: _('Personas socias') },
@@ -81,13 +81,15 @@ OpenData.loadAvailableMetrics = function() {
 			// TODO: Reload data
 			OpenData.selectedPool = Object.keys(OpenData.pools.ccaas).map(function (k) { return OpenData.pools.ccaas[k]; });
 			if (GapMinder.Example.api) {
+				GapMinder.Example.api.setX('members');
+				GapMinder.Example.api.setY('contracts');
+				GapMinder.Example.xmetric = 'members';
+				GapMinder.Example.ymetric = 'contracts';
+				GapMinder.Example.rmetric = 'members_change';
 				GapMinder.Example.api.resetTimeAxis();
-				GapMinder.Example.api.setX("members");
-				GapMinder.Example.api.setY("contracts");
-				GapMinder.Example.xmetric = "member";
-				GapMinder.Example.ymetric = "contracts";
 				GapMinder.Example.api.replay();
 			}
+			m.redraw();
 		})
 }
 
@@ -166,8 +168,8 @@ GapMinder.oninit = function(vn) {
 	self.api.setR = function(metric) { self.setRMetric(metric); };
 	self.api.resetTimeAxis = function() { self.resetTimeAxis(); }
 	self.parameters = {
-		x: 'contracts',
-		y: 'members',
+		x: 'members',
+		y: 'contracts',
 		r: 'members_change',
 		color: 'code',
 //		key: 'parent',
@@ -656,8 +658,8 @@ const Cell = Layout.Cell;
 
 GapMinder.Example = {};
 GapMinder.Example.api = {};
-GapMinder.Example.xmetric = 'contracts';
-GapMinder.Example.ymetric = 'members';
+GapMinder.Example.xmetric = 'members';
+GapMinder.Example.ymetric = 'contracts';
 GapMinder.Example.rmetric = 'members_change';
 GapMinder.Example.view = function(vn) {
 	var metricOptions = Object.keys(OpenData.metrics).map(function(key) {
