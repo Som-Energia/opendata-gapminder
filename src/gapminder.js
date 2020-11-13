@@ -70,7 +70,6 @@ OpenData.loadAvailableMetrics = function() {
 			}))
 		})
 		.then(metricsData => {
-			// TODO: Use this. Change extents when metric changes
 			OpenData.metricExtents = {};
 			Object.keys(OpenData.metrics).map(function(metric) {
 				var values = Object.keys(OpenData.pools.ccaas).map(function(ccaa) {
@@ -78,18 +77,18 @@ OpenData.loadAvailableMetrics = function() {
 				})
 				OpenData.metricExtents[metric] = d3.extent(d3.merge(values));
 			});
-			// TODO: Reload data
 			OpenData.selectedPool = Object.keys(OpenData.pools.ccaas).map(function (k) { return OpenData.pools.ccaas[k]; });
 			if (GapMinder.Example.api) {
-				GapMinder.Example.api.setX('members');
-				GapMinder.Example.api.setY('contracts');
 				GapMinder.Example.xmetric = 'members';
 				GapMinder.Example.ymetric = 'contracts';
 				GapMinder.Example.rmetric = 'members_change';
+				GapMinder.Example.api.setX('members');
+				GapMinder.Example.api.setY('contracts');
+				GapMinder.Example.api.setR('members_change');
 				GapMinder.Example.api.resetTimeAxis();
-				GapMinder.Example.api.replay();
 			}
 			m.redraw();
+			GapMinder.Example.api.replay();
 		})
 }
 
@@ -347,15 +346,15 @@ GapMinder.oncreate = function(vn) {
 	dateLabel.attr("y", dateBox.height-32);
 	dateBox = dateLabel.node().getBBox();
 
-	var timeBounds = d3.extent(OpenData.dates());
-	var dateScale = d3.scaleTime()
-		.domain(timeBounds)
+	self.timeBounds = d3.extent(OpenData.dates());
+	self.dateScale = d3.scaleTime()
+		.domain(self.timeBounds)
 		.range([dateBox.x + 10, dateBox.x + dateBox.width - 10])
 		.clamp(true)
 		;
 
 	var dateAxis = d3.axisBottom()
-		.scale(dateScale)
+		.scale(self.dateScale)
 		;
 	// Add the date-axis.
 	view.append("g")
@@ -365,8 +364,8 @@ GapMinder.oncreate = function(vn) {
 
 	timePoint
 		.attr('class', 'timepointer')
-		.attr('x1', dateScale(self.currentDate))
-		.attr('x2', dateScale(self.currentDate))
+		.attr('x1', self.dateScale(self.currentDate))
+		.attr('x2', self.dateScale(self.currentDate))
 		.attr('y1', dateBox.y)
 		.attr('y2', dateBox.y+dateBox.height)
 		.style('stroke', 'red')
@@ -441,13 +440,15 @@ GapMinder.oncreate = function(vn) {
 		displayDate(self.currentDate);
 	}
 	function resetTimeAxis(scale) {
-		timeBounds = d3.extent(OpenData.dates());
-		dateScale.domain(timeBounds);
-		dateAxis.scale(dateScale);
+		self.pause();
+		self.timeBounds = d3.extent(OpenData.dates());
+		console.log("resetTimeAxis", self.timeBounds[0]);
+		self.dateScale.domain(self.timeBounds);
+		dateAxis.scale(self.dateScale);
 		// Add the date-axis.
 		d3.select(".time.axis")
 			.call(dateAxis);
-		displayDate(timeBounds[0]);
+		displayDate(self.timeBounds[0]);
 	}
 	// Positions the dots based on data.
 	function position(dot) {
@@ -536,8 +537,8 @@ GapMinder.oncreate = function(vn) {
 		var dateText = date.toISOString().slice(0,7);
 		dateLabel.text(dateText);
 		timePoint
-			.attr('x1', dateScale(self.currentDate))
-			.attr('x2', dateScale(self.currentDate))
+			.attr('x1', self.dateScale(self.currentDate))
+			.attr('x2', self.dateScale(self.currentDate))
 			;
 
 	}
@@ -585,33 +586,36 @@ GapMinder.oncreate = function(vn) {
 			.attr("y", dateBox.y)
 			.attr("width", dateBox.width)
 			.attr("height", dateBox.height)
-			.on("mouseover", enableInteraction);
+			.on("mouseover", dragDate);
 
 		// Start a transition that interpolates the data based on date.
 		self.replay = function() {
-			self.currentDate = timeBounds[0];
+			self.pause();
+			displayDate(self.timeBounds[0]);
 			self.play();
 		};
 		self.play = function() {
 			self.pause();
-			var remainingFactor = (timeBounds[1]-self.currentDate)/(
-				timeBounds[1]-timeBounds[0]);
+			var remainingFactor = (self.timeBounds[1]-self.currentDate)/(
+				self.timeBounds[1]-self.timeBounds[0]);
 			view.transition()
-				.duration(60000*remainingFactor)
 				.ease(d3.easeLinear)
 				.tween("dateplay", function() {
-					var date = d3.interpolateDate(self.currentDate, timeBounds[1]);
+					var date = d3.interpolateDate(self.currentDate, self.timeBounds[1]);
 					return function(t) { displayDate(date(t)); };
 				})
-				.on("end", self.replay);
-			overlay.on("mouseover", enableInteraction);
+				.on("end", self.replay)
+				.duration(60000*remainingFactor)
+			;
+			overlay.on("mouseover", dragDate);
 		};
 		self.pause = function() {
+			console.log("Paused at", self.currentDate);
 			view.transition().duration(0);
 		};
 
 		// After the transition finishes, you can mouseover to change the date.
-		function enableInteraction() {
+		function dragDate() {
 			// Cancel the current transition, if any.
 			self.pause();
 
@@ -630,17 +634,17 @@ GapMinder.oncreate = function(vn) {
 			}
 
 			function mousemove() {
-				displayDate(dateScale.invert(d3.mouse(this)[0]));
+				displayDate(self.dateScale.invert(d3.mouse(this)[0]));
 			}
 		}
-
+/*
 		// Tweens the entire chart by first tweening the date, and then the data.
 		// For the interpolated data, the dots and label are redrawn.
 		function dateplay() {
-			var date = d3.interpolateDate(timeBounds[0], timeBounds[1]);
+			var date = d3.interpolateDate(self.timeBounds[0], self.timeBounds[1]);
 			return function(t) { displayDate(date(t)); };
 		}
-
+*/
 	};
 	self.loadData();
 	self.replay();
