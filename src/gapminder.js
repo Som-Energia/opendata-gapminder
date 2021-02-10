@@ -473,7 +473,7 @@ GapMinder.oncreate = function(vn) {
 		displayDate(self.currentDate);
 	}
 	function resetTimeAxis(scale) {
-		self.pause();
+		self.pause && self.pause();
 		self.timeBounds = d3.extent(OpenData.dates());
 		console.log("resetTimeAxis", self.timeBounds[0]);
 		self.dateScale.domain(self.timeBounds);
