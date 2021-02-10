@@ -66,16 +66,17 @@ OpenData.loadAvailableMetrics = function() {
 				OpenData.metricExtents[metric] = d3.extent(d3.merge(values));
 			});
 			OpenData.selectedPool = Object.keys(OpenData.pools.ccaas).map(function (k) { return OpenData.pools.ccaas[k]; });
-			console.log("initializing axis");
-			GapMinder.Example.xmetric = 'members';
-			GapMinder.Example.ymetric = 'contracts';
-			GapMinder.Example.rmetric = 'members_change';
-			GapMinder.Example.api.setX('members');
-			GapMinder.Example.api.setY('contracts');
-			GapMinder.Example.api.setR('members_change');
-			GapMinder.Example.api.resetTimeAxis();
-			GapMinder.Example.api.replay();
 			m.redraw();
+			if (GapMinder.Example.api) {
+				GapMinder.Example.xmetric = 'members';
+				GapMinder.Example.ymetric = 'contracts';
+				GapMinder.Example.rmetric = 'members_change';
+				GapMinder.Example.api.setX('members');
+				GapMinder.Example.api.setY('contracts');
+				GapMinder.Example.api.setR('members_change');
+				GapMinder.Example.api.resetTimeAxis();
+			}
+			GapMinder.Example.api.replay();
 		})
 }
 
