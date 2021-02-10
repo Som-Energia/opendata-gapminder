@@ -40,19 +40,15 @@ OpenData.loadAvailableMetrics = function() {
 		.then(result => {
 			OpenData.metrics = {};
 			OpenData.metricdata = {};
-			return Promise.all(result.metrics.map(o => {
-				OpenData.metrics[o.id] = o.text;
-				OpenData.metrics[o.id + '_change'] = _('Incremento de ') + o.text;
-				OpenData.metrics[o.id + '_per1M'] = o.text + _(' por millón de habitantes');
-				return fetchyaml(apibase + '/'+ o.id + '/by/'+geolevel+'/monthly/from/2010-10-10?country=ES')
+			return Promise.all(result.metrics.map(metric => {
+				OpenData.metrics[metric.id] = metric.text;
+				OpenData.metrics[metric.id + '_change'] = _('Incremento de ') + metric.text;
+				OpenData.metrics[metric.id + '_per1M'] = metric.text + _(' por millón de habitantes');
+				return fetchyaml(apibase + '/'+ metric.id + '/by/'+geolevel+'/monthly/from/2010-10-10?country=ES')
 					.then(metricdata => {
-						console.log("Loaded data from", o.id)
+						console.log("Loaded data from", metric.id)
 						// Api returns dates as strings, turn them dates
-						metricdata.dates = metricdata.dates.map(function(d) { return new Date(d);})
-						Object.keys(metricdata.countries).map(function(countryCode) {
-							appendPool(o.id, metricdata.countries, countryCode, 'ccaas');
-						})
-						OpenData.metricdata[o.id] = metricdata;
+						processData(metric.id, metricdata);
 						return metricdata;
 					})
 			}))
@@ -89,6 +85,14 @@ OpenData.dates = function() {
 		new Date("2010-02-01"),
 		new Date("2010-03-01"),
 	];
+}
+
+function processData(metric, metricdata) {
+	metricdata.dates = metricdata.dates.map(function(d) { return new Date(d);})
+	Object.keys(metricdata.countries).map(function(countryCode) {
+		appendPool(metric, metricdata.countries, countryCode, 'ccaas');
+	})
+	OpenData.metricdata[metric] = metricdata;
 }
 
 function appendPool(metric, context, parentCode, level) {
