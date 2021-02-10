@@ -9,8 +9,8 @@ require('font-awesome/css/font-awesome.css');
 require('@material/typography/dist/mdc.typography.css').default;
 var yaml = require('js-yaml');
 
+var apibase = 'http://localhost:5001/v0.2';
 var apibase = 'https://opendata.somenergia.coop/v0.2';
-//var apibase = 'http://localhost:5001/v0.2';
 
 function fetchyaml(uri) {
 	return d3.text(uri)
