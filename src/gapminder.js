@@ -256,7 +256,7 @@ GapMinder.oncreate = function(vn) {
 
 	var radiusScale = d3.scaleSqrt()
 		.domain([1,200000])
-		.range([5, 200])
+		.range([3, 60])
 		;
 	var colorScale = d3.scaleOrdinal(d3.schemeAccent);
 
@@ -424,6 +424,10 @@ GapMinder.oncreate = function(vn) {
 		yScaleLog.domain([1,OpenData.metricExtents[metric][1]]);
 		yScaleLinear.domain(OpenData.metricExtents[metric]);
 		resetYAxis(self.yScale);
+	};
+	self.setRMetric = function(metric) {
+		self.parameters.r = metric;
+		displayDate(self.currentDate);
 	};
 	self.setYLinear = function() {
 		resetYAxis(yScaleLinear);
