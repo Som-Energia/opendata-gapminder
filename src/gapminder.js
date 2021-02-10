@@ -560,7 +560,7 @@ GapMinder.oncreate = function(vn) {
 			.call(position)
 			.sort(order)
 		;
-		var dateText = date.toISOString().slice(0,7);
+		var dateText = date? date.toISOString().slice(0,7):'0000-00-00';
 		dateLabel.text(dateText);
 		timePoint
 			.attr('x1', self.dateScale(self.currentDate))
