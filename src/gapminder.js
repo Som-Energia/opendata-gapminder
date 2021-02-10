@@ -18,6 +18,7 @@ function fetchyaml(uri) {
 		.then(text => {false && console.debug(text); return yaml.safeLoad(text)})
 }
 
+var defaultLevel = 'ccaa';
 
 var OpenData = {}
 OpenData.metrics = {};
@@ -26,11 +27,12 @@ OpenData.selectedPool = []
 
 OpenData.loadRelativeMetrics = function() {
 	// TODO: This should be taken from API
-	const populationTsv = require('dsv-loader?delimiter=\t!./data/poblacio_ccaa-20140101.csv');
-	OpenData.populationByCCAA = {};
-	populationTsv.map(function(v) {
+	const ccaaPopulationTsv = require('dsv-loader?delimiter=\t!./data/poblacio_ccaa-20140101.csv');
+	OpenData.population = {}
+	OpenData.populationByCCAA = OpenData.population['ccaas'] = {};
+	ccaaPopulationTsv.map(function(v) {
 		v.population=parseInt(v.population_2014_01);
-		OpenData.populationByCCAA[v.code]=v;
+		OpenData.population['ccaas'][v.code]=v;
 	});
 }
 OpenData.loadAvailableMetrics = function() {
@@ -113,10 +115,10 @@ function appendPool(metric, context, parentCode, level) {
 				code: code,
 				name: child.name,
 			};
-			if (level==='ccaas') {
-				childTarget.population= OpenData.populationByCCAA[code]!==undefined ?
-						OpenData.populationByCCAA[code].population:
-						OpenData.populationByCCAA['00'].population;
+			if (OpenData.population[level] !== undefined) {
+				childTarget.population = OpenData.population[level][code]!==undefined ?
+						OpenData.population[level][code].population:
+						OpenData.population[level]['00'].population;
 			}
 		}
 		childTarget[metric] = child.values;
