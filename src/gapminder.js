@@ -56,7 +56,7 @@ OpenData.loadAvailableMetrics = function() {
 				OpenData.metrics[o.id] = o.text;
 				OpenData.metrics[o.id + '_change'] = _('Incremento de ') + o.text;
 				OpenData.metrics[o.id + '_per1M'] = o.text + _(' por millón de habitantes');
-				return fetchyaml(apibase + '/'+ o.id + '/by/ccaa/monthly')
+				return fetchyaml(apibase + '/'+ o.id + '/by/ccaa/monthly?country=ES')
 					.then(metricdata => {
 						console.log("Loaded data from", o.id)
 						// Api returns dates as strings, turn them dates
