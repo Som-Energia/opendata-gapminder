@@ -15,7 +15,7 @@ var apibase = 'https://opendata.somenergia.coop/v0.2';
 function fetchyaml(uri) {
 	return d3.text(uri)
 		.then(response => {false && console.debug(response); return response})
-		.then(text =>  {false && console.debug(text); return yaml.safeLoad(text)})
+		.then(text => {false && console.debug(text); return yaml.safeLoad(text)})
 }
 
 
