@@ -46,7 +46,7 @@ OpenData.basicMetrics = [
 OpenData.pools = {};
 OpenData.selectedPool = []
 OpenData.loadAvailableMetrics = function() {
-	return fetchyaml(apibase + '/introspection/metrics')
+	return fetchyaml(apibase + '/discover/metrics')
 		.then(result => {
 			console.debug("metrics fetched", result)
 			OpenData.basicMetrics = result;
