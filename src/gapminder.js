@@ -20,6 +20,10 @@ function fetchyaml(uri) {
 
 
 var OpenData = {}
+OpenData.metrics = {};
+OpenData.pools = {};
+OpenData.selectedPool = []
+
 OpenData.loadRelativeMetrics = function() {
 	// TODO: This should be taken from API
 	const populationTsv = require('dsv-loader?delimiter=\t!./data/poblacio_ccaa-20140101.csv');
@@ -29,27 +33,9 @@ OpenData.loadRelativeMetrics = function() {
 		OpenData.populationByCCAA[v.code]=v;
 	});
 }
-OpenData.loadRelativeMetrics();
-
-OpenData.metrics = {
-	members: _('Personas socias'),
-	members_change: _('Nuevas personas socias'),
-	members_per1M: _('Personas socias por millón de habitantes'),
-	contracts: _('Contratos'),
-	contracts_change: _('Nuevos contratos'),
-	contracts_per1M: _('Contratos por millón de habitantes'),
-};
-OpenData.basicMetrics = [
-	{id: 'members', text: _('Personas socias') },
-	{id: 'contracts', text: _('Contratos') },
-];
-OpenData.pools = {};
-OpenData.selectedPool = []
 OpenData.loadAvailableMetrics = function() {
 	return fetchyaml(apibase + '/discover/metrics')
 		.then(result => {
-			console.debug("metrics fetched", result)
-			OpenData.basicMetrics = result;
 			OpenData.metrics = {};
 			OpenData.metricdata = {};
 			return Promise.all(result.metrics.map(o => {
@@ -78,21 +64,18 @@ OpenData.loadAvailableMetrics = function() {
 				OpenData.metricExtents[metric] = d3.extent(d3.merge(values));
 			});
 			OpenData.selectedPool = Object.keys(OpenData.pools.ccaas).map(function (k) { return OpenData.pools.ccaas[k]; });
-			if (GapMinder.Example.api) {
-				GapMinder.Example.xmetric = 'members';
-				GapMinder.Example.ymetric = 'contracts';
-				GapMinder.Example.rmetric = 'members_change';
-				GapMinder.Example.api.setX('members');
-				GapMinder.Example.api.setY('contracts');
-				GapMinder.Example.api.setR('members_change');
-				GapMinder.Example.api.resetTimeAxis();
-			}
-			m.redraw();
+			console.log("initializing axis");
+			GapMinder.Example.xmetric = 'members';
+			GapMinder.Example.ymetric = 'contracts';
+			GapMinder.Example.rmetric = 'members_change';
+			GapMinder.Example.api.setX('members');
+			GapMinder.Example.api.setY('contracts');
+			GapMinder.Example.api.setR('members_change');
+			GapMinder.Example.api.resetTimeAxis();
 			GapMinder.Example.api.replay();
+			m.redraw();
 		})
 }
-
-OpenData.loadAvailableMetrics()
 
 OpenData.dates = function() {
 	if (OpenData.metricdata && OpenData.metricdata.contracts) {
@@ -148,7 +131,47 @@ function appendPool(metric, context, parentCode, level) {
 	});
 }
 
-
+OpenData.metricText = function(metric) {
+	return OpenData.metrics[metric];
+};
+OpenData.metricOptions = function(selected) {
+	return Object.keys(OpenData.metrics).map(function(key) {
+		return {
+			value: key,
+			text: OpenData.metricText(key),
+			selected: key === selected,
+		};
+	});
+};
+OpenData.interpolateDate = function(date) {
+	var i = d3.bisectLeft(OpenData.dates(), date, 0, OpenData.dates().length - 1);
+	var factor = i>0?
+		(date - OpenData.dates()[i]) / (OpenData.dates()[i-1] - OpenData.dates()[i]):
+		0;
+	return OpenData.selectedPool.map(function(object) {
+		function interpolate(source) {
+			if (i===0) return source[i];
+			return source[i] * (1-factor) + source[i-1] * factor;
+		}
+		function getValue(source) {
+			const minimum = 0; // 1 for log, 0 for linear
+			if (!source) return minimum;
+			var value = interpolate(source);
+			if (!value) return minimum;
+			return value;
+		}
+		var interpolated = {
+			date: date,
+			code: object.code,
+			parent: object.parent,
+			name: object.name,
+		};
+		Object.keys(OpenData.metrics).map(function(metric) {
+			interpolated[metric] = getValue(object[metric]);
+		})
+		return interpolated;
+	});
+};
 
 const GapMinder = {};
 GapMinder.oninit = function(vn) {
@@ -176,6 +199,9 @@ GapMinder.oninit = function(vn) {
 		name: 'name',
 	};
 };
+
+OpenData.loadRelativeMetrics();
+OpenData.loadAvailableMetrics()
 
 GapMinder.oncreate = function(vn) {
 	var self = this;
@@ -270,7 +296,7 @@ GapMinder.oncreate = function(vn) {
 		.attr("text-anchor", "end")
 		.attr("x", width)
 		.attr("y", height - axisLabelMargin)
-		.text(OpenData.metrics[self.parameters.x]);
+		.text(OpenData.metricText(self.parameters.x));
 
 	// Add a y-axis label.
 	self.yLabel = view.append("text")
@@ -280,7 +306,7 @@ GapMinder.oncreate = function(vn) {
 		.attr("x", "-1em")
 		.attr("dy", ".75em")
 		.attr("transform", "rotate(-90)")
-		.text(OpenData.metrics[self.parameters.y]);
+		.text(OpenData.metricText(self.parameters.y));
 
 	// Add grids
 	var xGridAxis = d3.axisBottom()
@@ -384,14 +410,14 @@ GapMinder.oncreate = function(vn) {
 
 	self.setXMetric = function(metric) {
 		self.parameters.x = metric;
-		self.xLabel.text(OpenData.metrics[metric]);
+		self.xLabel.text(OpenData.metricText(metric));
 		xScaleLog.domain([1,OpenData.metricExtents[metric][1]]);
 		xScaleLinear.domain(OpenData.metricExtents[metric]);
 		resetXAxis(self.xScale);
 	};
 	self.setYMetric = function(metric) {
 		self.parameters.y = metric;
-		self.yLabel.text(OpenData.metrics[metric]);
+		self.yLabel.text(OpenData.metricText(metric));
 		yScaleLog.domain([1,OpenData.metricExtents[metric][1]]);
 		yScaleLinear.domain(OpenData.metricExtents[metric]);
 		resetYAxis(self.yScale);
@@ -497,13 +523,13 @@ GapMinder.oncreate = function(vn) {
 			"<div><b>"+_("Mes:")+"</b> "+
 			self.currentDate.toISOString().slice(0,7)+
 			"</div>"+
-			"<div><b>"+OpenData.metrics[self.parameters.x]+":</b> "+
+			"<div><b>"+OpenData.metricText(self.parameters.x)+":</b> "+
 			Math.round(data[self.parameters.x])+
 			"</div>"+
-			"<div><b>"+OpenData.metrics[self.parameters.y]+":</b> "+
+			"<div><b>"+OpenData.metricText(self.parameters.y)+":</b> "+
 			Math.round(data[self.parameters.y])+
 			"</div>"+
-			"<div><b>"+OpenData.metrics[self.parameters.r]+":</b> "+
+			"<div><b>"+OpenData.metricText(self.parameters.r)+":</b> "+
 			Math.round(data[self.parameters.r])+
 			"</div>"+
 			""
@@ -545,35 +571,7 @@ GapMinder.oncreate = function(vn) {
 
 	// Interpolates the dataset for the given date.
 	function interpolateData(date) {
-		var i = d3.bisectLeft(OpenData.dates(), date, 0, OpenData.dates().length - 1);
-		var factor = i>0?
-			(date - OpenData.dates()[i]) / (OpenData.dates()[i-1] - OpenData.dates()[i]):
-			0;
-		return OpenData.selectedPool.map(function(object) {
-			function interpolate(source) {
-				if (i===0) return source[i];
-				return source[i] * (1-factor) + source[i-1] * factor;
-			}
-			function getValue(source) {
-				const minimum = 1; // 1 for log, 0 for linear
-				if (!source) return minimum;
-				var value = interpolate(source);
-				if (!value) return minimum;
-				return value;
-			}
-			return {
-				date: date,
-				code: object.code,
-				parent: object.parent,
-				name: object.name,
-				members: getValue(object.members),
-				contracts: getValue(object.contracts),
-				members_change: getValue(object.members_change),
-				contracts_change: getValue(object.contracts_change),
-				members_per1M: getValue(object.members_per1M),
-				contracts_per1M: getValue(object.contracts_per1M),
-			};
-		});
+		return OpenData.interpolateDate(date);
 	}
 	self.loadData = function() {
 
@@ -637,14 +635,6 @@ GapMinder.oncreate = function(vn) {
 				displayDate(self.dateScale.invert(d3.mouse(this)[0]));
 			}
 		}
-/*
-		// Tweens the entire chart by first tweening the date, and then the data.
-		// For the interpolated data, the dots and label are redrawn.
-		function dateplay() {
-			var date = d3.interpolateDate(self.timeBounds[0], self.timeBounds[1]);
-			return function(t) { displayDate(date(t)); };
-		}
-*/
 	};
 	self.loadData();
 	self.replay();
@@ -662,17 +652,10 @@ const Cell = Layout.Cell;
 
 GapMinder.Example = {};
 GapMinder.Example.api = {};
-GapMinder.Example.xmetric = 'members';
-GapMinder.Example.ymetric = 'contracts';
-GapMinder.Example.rmetric = 'members_change';
+GapMinder.Example.xmetric = '';
+GapMinder.Example.ymetric = '';
+GapMinder.Example.rmetric = '';
 GapMinder.Example.view = function(vn) {
-	var metricOptions = Object.keys(OpenData.metrics).map(function(key) {
-		return {
-			value: key,
-			text: OpenData.metrics[key],
-		};
-	});
-
 	return m(Layout, [
 		m(Row, [
 			m(Cell, {span: 3},
@@ -691,7 +674,7 @@ GapMinder.Example.view = function(vn) {
 			),
 			m(Cell, {span: 3}, m(Select, {
 				label: _('Eje X'),
-				options: metricOptions,
+				options: OpenData.metricOptions(GapMinder.Example.xmetric),
 				required: true,
 				value: GapMinder.Example.xmetric,
 				onchange: function(ev) {
@@ -702,7 +685,7 @@ GapMinder.Example.view = function(vn) {
 			})),
 			m(Cell, {span: 3}, m(Select, {
 				label: _('Eje Y'),
-				options: metricOptions,
+				options: OpenData.metricOptions(GapMinder.Example.ymetric),
 				required: true,
 				value: GapMinder.Example.ymetric,
 				onchange: function(ev) {
@@ -713,7 +696,7 @@ GapMinder.Example.view = function(vn) {
 			})),
 			m(Cell, {span: 3}, m(Select, {
 				label: _('Radio'),
-				options: metricOptions,
+				options: OpenData.metricOptions(GapMinder.Example.rmetric),
 				required: true,
 				value: GapMinder.Example.rmetric,
 				onchange: function(ev) {
