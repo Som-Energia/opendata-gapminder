@@ -306,7 +306,7 @@ GapMinder.oncreate = function(vn) {
 		.attr("transform", "translate(0," + height + ")")
 		.call(xGridAxis)
 		;
-	view.append("g")         
+	view.append("g")
 		.attr("class", "grid y")
 		.call(yGridAxis)
 		;
@@ -736,11 +736,11 @@ GapMinder.Example.view = function(vn) {
 };
 
 var Main = {
-    view: function(vn) {
+	view: function(vn) {
 		return m('.form.mdc-typography', [
-            m(GapMinder.Example)
-        ]);
-    },
+			m(GapMinder.Example)
+		]);
+	},
 };
 
 window.onload = function() {
