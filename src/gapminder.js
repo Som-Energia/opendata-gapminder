@@ -9,11 +9,14 @@ require('font-awesome/css/font-awesome.css');
 require('@material/typography/dist/mdc.typography.css').default;
 var yaml = require('js-yaml');
 
-var apibase = 'http://localhost:5001/v0.2';
-var apibase = 'https://opendata.somenergia.coop/v0.2';
-
 function fetchyaml(uri) {
-	return d3.text(uri)
+	const apibase = (
+		process.env.DEV_OPENDATA_API?
+		'http://localhost:5001/v0.2':
+		'https://opendata.somenergia.coop/v0.2'
+	);
+
+	return d3.text(apibase+uri)
 		.then(response => {false && console.debug(response); return response})
 		.then(text => {false && console.debug(text); return yaml.safeLoad(text)})
 }
@@ -36,7 +39,7 @@ OpenData.loadRelativeMetrics = function() {
 	});
 }
 OpenData.loadAvailableMetrics = function() {
-	return fetchyaml(apibase + '/discover/metrics')
+	return fetchyaml('/discover/metrics')
 		.then(result => {
 			OpenData.metrics = {};
 			OpenData.metricdata = {};
@@ -44,9 +47,9 @@ OpenData.loadAvailableMetrics = function() {
 				OpenData.metrics[metric.id] = metric.text;
 				OpenData.metrics[metric.id + '_change'] = _('Incremento de ') + metric.text;
 				OpenData.metrics[metric.id + '_per1M'] = metric.text + _(' por millón de habitantes');
-				return fetchyaml(apibase + '/'+ metric.id + '/by/'+geolevel+'/monthly/from/2010-10-10?country=ES')
+				return fetchyaml('/'+ metric.id + '/by/'+geolevel+'/monthly/from/2010-10-10?country=ES')
 					.then(metricdata => {
-						console.log("Loaded data from", metric.id)
+						console.log("Loaded data for metric ", metric.id)
 						// Api returns dates as strings, turn them dates
 						processData(metric.id, metricdata);
 						return metricdata;
