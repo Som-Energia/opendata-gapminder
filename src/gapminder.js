@@ -18,7 +18,7 @@ function fetchyaml(uri) {
 
 	return d3.text(apibase+uri)
 		.then(response => {false && console.debug(response); return response})
-		.then(text => {false && console.debug(text); return yaml.safeLoad(text)})
+		.then(text => {false && console.debug(text); return yaml.load(text)})
 }
 
 var geolevel = 'ccaa';
