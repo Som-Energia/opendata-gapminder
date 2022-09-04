@@ -515,7 +515,7 @@ GapMinder.oncreate = function(vn) {
 		const infoWidth = 300; // TODO: Should be 20em as the css .currentInfo width
 		const infoHeight = 120; // TODO: Should be ...whatever it is
 		currentInfo.style('display', 'block');
-		var coordinates = d3.mouse(this);
+		var coordinates = d3.pointer(this);
 		var x = coordinates[0]+20;
 		if (x+infoWidth>width) {
 			x = width - infoWidth;
@@ -646,7 +646,7 @@ GapMinder.oncreate = function(vn) {
 			}
 
 			function mousemove() {
-				displayDate(self.dateScale.invert(d3.mouse(this)[0]));
+				displayDate(self.dateScale.invert(d3.pointer(this)[0]));
 			}
 		}
 	};
