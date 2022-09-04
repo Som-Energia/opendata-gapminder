@@ -66,16 +66,16 @@ OpenData.loadAvailableMetrics = function() {
 			});
 			OpenData.selectedPool = Object.keys(OpenData.pools.ccaas).map(function (k) { return OpenData.pools.ccaas[k]; });
 			m.redraw();
-			if (GapMinder.Example.api) {
-				GapMinder.Example.xmetric = 'members';
-				GapMinder.Example.ymetric = 'contracts';
-				GapMinder.Example.rmetric = 'members_change';
-				GapMinder.Example.api.setX('members');
-				GapMinder.Example.api.setY('contracts');
-				GapMinder.Example.api.setR('members_change');
-				GapMinder.Example.api.resetTimeAxis();
+			if (App.api) {
+				App.xmetric = 'members';
+				App.ymetric = 'contracts';
+				App.rmetric = 'members_change';
+				App.api.setX('members');
+				App.api.setY('contracts');
+				App.api.setR('members_change');
+				App.api.resetTimeAxis();
 			}
-			GapMinder.Example.api.replay();
+			App.api.replay();
 		})
 }
 
@@ -650,13 +650,15 @@ GapMinder.oncreate = function(vn) {
 			}
 		}
 	};
+	//self.pause();
 	self.loadData();
-	self.replay();
 };
 
 GapMinder.view = function(vn) {
 	return m('.gapminder', vn.attrs);
 };
+
+
 
 const Select = require('./mdc/select');
 const Button = require('./mdc/button');
@@ -664,18 +666,21 @@ const Layout = require('./mdc/layout');
 const Row = Layout.Row;
 const Cell = Layout.Cell;
 
-GapMinder.Example = {};
-GapMinder.Example.api = {};
-GapMinder.Example.xmetric = '';
-GapMinder.Example.ymetric = '';
-GapMinder.Example.rmetric = '';
-GapMinder.Example.view = function(vn) {
+const App = {};
+App.api = {};
+App.xmetric = '';
+App.ymetric = '';
+App.rmetric = '';
+App.view = function(vn) {
+	const xoptions = OpenData.metricOptions(App.xmetric);
+	const yoptions = OpenData.metricOptions(App.ymetric);
+	const roptions = OpenData.metricOptions(App.rmetric);
 	return m(Layout, [
 		m(Row, m(Cell, {span: 12}, m(GapMinder, {
-			api: GapMinder.Example.api,
-			xmetric: GapMinder.Example.xmetric,
-			ymetric: GapMinder.Example.ymetric,
-			rmetric: GapMinder.Example.rmetric,
+			api: App.api,
+			xmetric: App.xmetric,
+			ymetric: App.ymetric,
+			rmetric: App.rmetric,
 			style: {
 				height: '750px',
 			},
@@ -686,46 +691,46 @@ GapMinder.Example.view = function(vn) {
 					faicon: 'play',
 					outlined: true,
 					style: {width: '50%'},
-					onclick: function() { GapMinder.Example.api.play();},
+					onclick: function() { App.api.play();},
 				},_('Play')),
 				m(Button, {
 					faicon: 'pause',
 					outlined: true,
 					style: {width: '50%'},
-					onclick: function() { GapMinder.Example.api.pause();},
+					onclick: function() { App.api.pause();},
 				},_('Pause')),
 			),
 			m(Cell, {span: 3}, m(Select, {
 				label: _('Eje X'),
-				options: OpenData.metricOptions(GapMinder.Example.xmetric),
+				options: xoptions,
 				required: true,
-				value: GapMinder.Example.xmetric,
+				value: App.xmetric,
 				onchange: function(ev) {
 					var metric = ev.target.value;
-					GapMinder.Example.xmetric = metric;
-					GapMinder.Example.api.setX(metric);
+					App.xmetric = metric;
+					App.api.setX(metric);
 				},
 			})),
 			m(Cell, {span: 3}, m(Select, {
 				label: _('Eje Y'),
-				options: OpenData.metricOptions(GapMinder.Example.ymetric),
+				options: yoptions,
 				required: true,
-				value: GapMinder.Example.ymetric,
+				value: App.ymetric,
 				onchange: function(ev) {
 					var metric = ev.target.value;
-					GapMinder.Example.ymetric = metric;
-					GapMinder.Example.api.setY(metric);
+					App.ymetric = metric;
+					App.api.setY(metric);
 				},
 			})),
 			m(Cell, {span: 3}, m(Select, {
 				label: _('Radio'),
-				options: OpenData.metricOptions(GapMinder.Example.rmetric),
+				options: roptions,
 				required: true,
-				value: GapMinder.Example.rmetric,
+				value: App.rmetric,
 				onchange: function(ev) {
 					var metric = ev.target.value;
-					GapMinder.Example.rmetric = metric;
-					GapMinder.Example.api.setR(metric);
+					App.rmetric = metric;
+					App.api.setR(metric);
 				},
 			})),
 		]),
@@ -734,8 +739,8 @@ GapMinder.Example.view = function(vn) {
 
 var Main = {
 	view: function(vn) {
-		return m('.form.mdc-typography', [
-			m(GapMinder.Example)
+		return m('.mdc-typography', [
+			m(App)
 		]);
 	},
 };
