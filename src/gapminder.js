@@ -421,18 +421,22 @@ GapMinder.oncreate = function(vn) {
 	self.setXMetric = function(metric) {
 		self.parameters.x = metric;
 		self.xLabel.text(OpenData.metricText(metric));
-		xScaleLog.domain([1,OpenData.metricExtents[metric][1]]);
-		xScaleLinear.domain(OpenData.metricExtents[metric]);
+		var [min, max] = OpenData.metricExtents[metric]??[0,100]
+		xScaleLog.domain([1,max]);
+		xScaleLinear.domain([min, max]);
 		resetXAxis(self.xScale);
 	};
 	self.setYMetric = function(metric) {
 		self.parameters.y = metric;
 		self.yLabel.text(OpenData.metricText(metric));
-		yScaleLog.domain([1,OpenData.metricExtents[metric][1]]);
-		yScaleLinear.domain(OpenData.metricExtents[metric]);
+		var [min, max] = OpenData.metricExtents[metric]??[0,100]
+		yScaleLog.domain([1,max]);
+		yScaleLinear.domain([min, max]);
 		resetYAxis(self.yScale);
 	};
 	self.setRMetric = function(metric) {
+		var [min, max] = OpenData.metricExtents[metric]??[0,100]
+		radiusScale.domain([0,max])
 		self.parameters.r = metric;
 		displayDate(self.currentDate);
 	};
