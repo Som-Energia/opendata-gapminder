@@ -24,9 +24,21 @@ function fetchyaml(uri) {
 var geolevel = 'ccaa';
 
 var OpenData = {}
-OpenData.metrics = {};
-OpenData.pools = {};
-OpenData.selectedPool = []
+
+OpenData.metricNames = {}; // Maps metric code -> Metric name
+OpenData.population = {}; // Maps geocode -> number
+OpenData.metricExtents = {}; // Maps metric code -> [min, max] values of the metric
+OpenData.pools = {}; // Maps geolevel -> data pool
+OpenData.selectedPool = []; // Current geolevel's pool
+
+// A data pool consists in an array of regions at the given geolevel,
+// each region having:
+// - parent: parent region codea at the parent geolevel
+// - code: own region code
+// - name: human name for the region
+// - population: relative metric value for the region
+// and then an attribute for every metric,
+// using the metric code as key and the time series as value.
 
 OpenData.loadRelativeMetrics = function() {
 	// TODO: This should be taken from API
@@ -38,47 +50,43 @@ OpenData.loadRelativeMetrics = function() {
 		OpenData.population['ccaas'][v.code]=v;
 	});
 }
-OpenData.loadAvailableMetrics = function() {
+
+OpenData.retrieveData = async function() {
+	OpenData.loadRelativeMetrics();
+	await OpenData.retrieveMetricList()
+		.then((result) => Promise.all(result.metrics.map(
+			(metric) => OpenData.retrieveMetricData(metric)
+		)))
+		.then(() => OpenData.selectGeolevel('ccaa'))
+	;
+};
+
+OpenData.retrieveMetricList = function() {
+	OpenData.metricNames = {};  // metric key -> description
+	OpenData.metricdata = {}; // metric key -> data
+	OpenData.metricExtents = {}; // metric key -> extents 
 	return fetchyaml('/discover/metrics')
-		.then(result => {
-			OpenData.metrics = {};
-			OpenData.metricdata = {};
-			return Promise.all(result.metrics.map(metric => {
-				OpenData.metrics[metric.id] = metric.text;
-				OpenData.metrics[metric.id + '_change'] = _('Incremento de ') + metric.text;
-				OpenData.metrics[metric.id + '_per1M'] = metric.text + _(' por millón de habitantes');
-				return fetchyaml('/'+ metric.id + '/by/'+geolevel+'/monthly/from/2010-10-10?country=ES')
-					.then(metricdata => {
-						console.log("Loaded data for metric ", metric.id)
-						// Api returns dates as strings, turn them dates
-						processData(metric.id, metricdata);
-						return metricdata;
-					})
-			}))
-		})
-		.then(metricsData => {
-			OpenData.metricExtents = {};
-			Object.keys(OpenData.metrics).map(function(metric) {
-				var values = Object.keys(OpenData.pools.ccaas).map(function(ccaa) {
-					return d3.extent(OpenData.pools.ccaas[ccaa][metric] || []);
-				})
-				OpenData.metricExtents[metric] = d3.extent(d3.merge(values));
-			});
-			OpenData.selectedPool = Object.keys(OpenData.pools.ccaas).map(function (k) { return OpenData.pools.ccaas[k]; });
-			m.redraw();
-			if (App.api) {
-				App.xmetric = 'members';
-				App.ymetric = 'contracts';
-				App.rmetric = 'members_change';
-				App.api.setX('members');
-				App.api.setY('contracts');
-				App.api.setR('members_change');
-				App.api.resetTimeAxis();
-			}
-			App.api.replay();
-		})
 }
 
+OpenData.retrieveMetricData = function(metric) {
+	OpenData.metricNames[metric.id] = metric.text;
+	OpenData.metricNames[metric.id + '_change'] = _('Incremento de ') + metric.text;
+	OpenData.metricNames[metric.id + '_per1M'] = metric.text + _(' por millón de habitantes');
+	return fetchyaml('/'+ metric.id + '/by/'+geolevel+'/monthly/from/2010-10-10?country=ES')
+		.then(metricdata => {
+			console.log("Loaded data for metric ", metric.id)
+			processData(metric.id, metricdata);
+			return metricdata;
+		})
+	;
+}
+
+OpenData.selectGeolevel = function(geolevel) {
+	// Select the data at the desired geolevel (ccaa)
+	OpenData.selectedPool = Object.keys(OpenData.pools.ccaas).map(
+		function (ccaa) { return OpenData.pools.ccaas[ccaa]; }
+	);
+}
 OpenData.dates = function() {
 	if (OpenData.metricdata && OpenData.metricdata.contracts) {
 		return OpenData.metricdata.contracts.dates;
@@ -91,11 +99,21 @@ OpenData.dates = function() {
 }
 
 function processData(metric, metricdata) {
+	// Store the original metric data (unused=)
+	OpenData.metricdata[metric] = metricdata;
+	// Turn string iso dates into actual dates
 	metricdata.dates = metricdata.dates.map(function(d) { return new Date(d);})
+	// Fill the metric in the pools recursively starting at country level
 	Object.keys(metricdata.countries).map(function(countryCode) {
 		appendPool(metric, metricdata.countries, countryCode, 'ccaas');
-	})
-	OpenData.metricdata[metric] = metricdata;
+	});
+	// Compute the numeric range (extents) of the metric
+	['', '_change', '_per1M'].map((suffix) => {
+		var values = Object.keys(OpenData.pools.ccaas).map(function(ccaa) {
+			return d3.extent(OpenData.pools.ccaas[ccaa][metric+suffix] || []);
+		})
+		OpenData.metricExtents[metric+suffix] = d3.extent(d3.merge(values));
+	});
 }
 
 function appendPool(metric, context, parentCode, level) {
@@ -137,15 +155,15 @@ function appendPool(metric, context, parentCode, level) {
 				return 1000000*v/population;
 			});
 		}
-		appendPool(metric, child.states, code, 'states');
+		//appendPool(metric, child.states, code, 'states');
 	});
 }
 
 OpenData.metricText = function(metric) {
-	return OpenData.metrics[metric];
+	return OpenData.metricNames[metric];
 };
 OpenData.metricOptions = function(selected) {
-	return Object.keys(OpenData.metrics).map(function(key) {
+	return Object.keys(OpenData.metricNames).map(function(key) {
 		return {
 			value: key,
 			text: OpenData.metricText(key),
@@ -176,7 +194,7 @@ OpenData.interpolateDate = function(date) {
 			parent: object.parent,
 			name: object.name,
 		};
-		Object.keys(OpenData.metrics).map(function(metric) {
+		Object.keys(OpenData.metricNames).map(function(metric) {
 			interpolated[metric] = getValue(object[metric]);
 		})
 		return interpolated;
@@ -184,9 +202,11 @@ OpenData.interpolateDate = function(date) {
 };
 
 const GapMinder = {};
+
 GapMinder.oninit = function(vn) {
 	var self = this;
 	// Exposed api
+	// Usually we populate the api object provided by the parent
 	self.api = vn.attrs.api || {};
 	self.api.play = function() { self.play && self.play(); };
 	self.api.replay = function() { self.replay && self.replay(); };
@@ -199,34 +219,32 @@ GapMinder.oninit = function(vn) {
 	self.api.setY = function(metric) { self.setYMetric(metric); };
 	self.api.setR = function(metric) { self.setRMetric(metric); };
 	self.api.resetTimeAxis = function() { self.resetTimeAxis(); }
+	// Which data attributes map to visualization domain
 	self.parameters = {
 		x: 'members',
 		y: 'contracts',
 		r: 'members_change',
 		color: 'code',
-//		key: 'parent',
+//		key: 'parent', // Useful to identify provinces of the same CCAA
 		key: 'code',
 		name: 'name',
 	};
 };
 
-OpenData.loadRelativeMetrics();
-OpenData.loadAvailableMetrics()
+GapMinder.view = function(vn) {
+	return m('.gapminder', vn.attrs);
+};
 
 GapMinder.oncreate = function(vn) {
 	var self = this;
-	// Various accessors that specify the four dimensions of data to visualize.
-	function pick(param) {
-		return function(d) {
-			return d[self.parameters[param]];
-		};
-	}
-	var x = pick('x');
-	var y = pick('y');
-	var radius = pick('r');
-	var color = pick('color');
-	var key = pick('key');
-	var name = pick('name');
+
+	// Mapping datum attributes to visualization domain
+	const key = (d) => d[self.parameters.key]
+	const name = (d) => d[self.parameters.name]
+	const color = (d) => d[self.parameters.color]
+	const x = (d) => d[self.parameters.x]
+	const y = (d) => d[self.parameters.y]
+	const radius = (d) => d[self.parameters.r]
 
 	self.width = vn.dom.offsetWidth;
 	self.height = vn.dom.offsetHeight;
@@ -511,15 +529,15 @@ GapMinder.oncreate = function(vn) {
 		.attr("class", "dots")
 	;
 
-	function hideCurrentDot(data) {
+	function hideCurrentDot(ev, data) {
 		currentInfo.style('display', 'none');
 	}
-	function showCurrentDot(data) {
+	function showCurrentDot(ev, data) {
 		const cursorSize = 20;
 		const infoWidth = 300; // TODO: Should be 20em as the css .currentInfo width
 		const infoHeight = 120; // TODO: Should be ...whatever it is
 		currentInfo.style('display', 'block');
-		var coordinates = d3.pointer(this);
+		var coordinates = d3.pointer(ev, this);
 		var x = coordinates[0]+20;
 		if (x+infoWidth>width) {
 			x = width - infoWidth;
@@ -587,6 +605,11 @@ GapMinder.oncreate = function(vn) {
 
 	}
 
+	self.setXMetric('members');
+	self.setYMetric('contracts');
+	self.setRMetric('members_change');
+	self.resetTimeAxis();
+
 	// Interpolates the dataset for the given date.
 	function interpolateData(date) {
 		return OpenData.interpolateDate(date);
@@ -649,8 +672,8 @@ GapMinder.oncreate = function(vn) {
 				dateLabel.classed("active", false);
 			}
 
-			function mousemove() {
-				displayDate(self.dateScale.invert(d3.pointer(this)[0]));
+			function mousemove(ev) {
+				displayDate(self.dateScale.invert(d3.pointer(ev,this)[0]));
 			}
 		}
 	};
@@ -658,9 +681,6 @@ GapMinder.oncreate = function(vn) {
 	self.loadData();
 };
 
-GapMinder.view = function(vn) {
-	return m('.gapminder', vn.attrs);
-};
 
 
 
@@ -752,7 +772,14 @@ var Main = {
 	},
 };
 
-window.onload = function() {
+
+window.onload = async function() {
+	await OpenData.retrieveData();
+	// Notify the application data is ready
+	App.xmetric = 'members';
+	App.ymetric = 'contracts';
+	App.rmetric = 'members_change';
+
 	var element = document.getElementById("mithril-target");
 	m.mount(element, Main);
 };
