@@ -12,8 +12,10 @@
   "dependencies": {
     "@emotion/react": "^11.13.0",
     "@emotion/styled": "^11.13.0",
+    "@modyfi/vite-plugin-yaml": "^1.1.0",
     "@mui/icons-material": "^5.16.4",
     "@mui/material": "^5.16.4",
+    "@somenergia/somenergia-ui": "file:../somenergia-ui",
     "d3": "^7.9.0",
     "prettier": "^3.3.3",
     "react": "^18.3.1",

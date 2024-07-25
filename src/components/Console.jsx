@@ -5,6 +5,7 @@ import MenuItem from '@mui/material/MenuItem'
 import TextField from '@mui/material/TextField'
 import PlayIcon from '@mui/icons-material/PlayArrow'
 import StopIcon from '@mui/icons-material/Stop'
+import ColorModeButton from '@somenergia/somenergia-ui/ColorModeButton'
 
 function t(x) {
   return x
@@ -12,9 +13,7 @@ function t(x) {
 
 function MetricSelector({ label, onChange, value, options }) {
   return (
-    <TextField compact select {...{ label, value, onChange }}
-    sx={{flexGrow: 1}}
-    >
+    <TextField select size="small" {...{ label, value, onChange }} sx={{ flexGrow: 2 }}>
       {options.map((option) => (
         <MenuItem key={option.value} value={option.value}>
           {option.label}
@@ -50,14 +49,24 @@ function Console() {
       width="calc(100% - 2pt)"
       height="calc(100vh - 20pt)"
     >
-      <Stack direction="row" 
-          sx={{flexGrow:1}}
-      >
-        Hello
+      <Stack direction="row" sx={{ flexGrow: 1 }}>
+        <svg width="100%">
+          <rect
+            x="0"
+            y="0"
+            width="100%"
+            height="100%"
+            fill="#333"
+            stroke="green"
+            strokeWidth="10"
+          />
+        </svg>
       </Stack>
-      <Stack direction="row">
-        <Button startIcon={<PlayIcon />}>{t('PLAY')}</Button>
-        <Button startIcon={<StopIcon />}>{t('PAUSE')}</Button>
+      <Stack direction="row" margin="1rem 1rem 2rem" gap="1rem">
+        <Stack direction="row" gap="1rem">
+          <Button variant="contained" startIcon={<PlayIcon />}>{t('PLAY')}</Button>
+          <Button variant="contained" startIcon={<StopIcon />}>{t('PAUSE')}</Button>
+        </Stack>
         <MetricSelector
           label={t('XAXIS')}
           value={xMetric}
@@ -76,6 +85,7 @@ function Console() {
           onChange={handleRMetricChange}
           options={options}
         />
+        <div><ColorModeButton /></div>
       </Stack>
     </Stack>
   )
