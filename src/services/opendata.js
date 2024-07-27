@@ -331,8 +331,7 @@ Gapminder.oncreate = function(container) {
 		.attr("y", 0)
 		.text(OpenData.metricText(self.parameters.r));
 	view.append("circle")
-		.attr("fill", "none")
-		.attr("stroke", "black")
+		.attr("class", "r label")
 		.attr("cx", self.width-legendRadius)
 		.attr("cy", -legendRadius)
 		.attr("r", legendRadius)
