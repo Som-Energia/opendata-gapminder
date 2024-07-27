@@ -418,6 +418,11 @@ Gapminder.oncreate = function(container) {
 		.style('stroke', 'red')
 		;
 
+	// Moving dots
+	var dots = view.append("g")
+		.attr("class", "dots")
+	;
+
 	var currentInfo = view.append('foreignObject')
 		.attr('class', 'currentInfo')
 		.attr('x', self.width-200)
@@ -543,11 +548,6 @@ Gapminder.oncreate = function(container) {
 	function order(a, b) {
 		return radius(b) - radius(a);
 	}
-	// Add a dot per nation. Initialize the data at 1800, and set the colors.
-	var dots = view.append("g")
-		.attr("class", "dots")
-	;
-
 	function hideCurrentDot(ev, data) {
 		currentInfo.style('display', 'none');
 	}
