@@ -14,6 +14,7 @@ export default function Gapminder({}) {
   }, [])
  
   function handleResize() {
+    if (!container.current) return
     const width = container.current.offsetWidth
     const height = container.current.offsetHeight
     setWidth(width)
