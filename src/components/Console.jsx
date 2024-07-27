@@ -102,7 +102,7 @@ function Console() {
           />
         )}
       </Theater>
-      <Stack direction="row" margin="1rem 1rem max(1rem + 2%)" gap="1rem">
+      <Stack direction="row" margin="1rem" gap="1rem">
         <Stack direction="row" gap="1rem">
           <Tooltip title={playing ? t('PAUSE') : t('PLAY')}>
             <Fab size="small" color="primary" onClick={togglePlaying}>
