@@ -16,7 +16,7 @@ import {useTranslation} from 'react-i18next'
 
 function MetricSelector({ label, onChange, value, options }) {
   return (
-    <TextField select size="small" {...{ label, value, onChange }} sx={{ flexGrow: 2 }}>
+    <TextField select size="small" {...{ label, value, onChange }} sx={{ flex: "1 1 0"}}>
       {options.map((option) => (
         <MenuItem key={option.value} value={option.value}>
           {option.label}
