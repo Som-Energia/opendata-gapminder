@@ -10,7 +10,7 @@ import Loading from '@somenergia/somenergia-ui/Loading'
 import OpenData from '../services/opendata'
 import ErrorSplash from './ErrorSplash'
 import FixedToWindow from './FixedToWindow'
-import Screen from './Screen'
+import Theater from './Theater'
 
 function t(x) {
   return x
@@ -76,7 +76,7 @@ function Console() {
   }
   return (
     <FixedToWindow>
-      <Screen>
+      <Theater>
         {loadingOpenData === notstarted ? null : loadingOpenData === inprogress ? (
           <Loading />
         ) : loadingOpenData === done ? (
@@ -89,7 +89,7 @@ function Console() {
             actionLabel={t('RELOAD_DATA')}
           />
         )}
-      </Screen>
+      </Theater>
       <Stack direction="row" margin="1rem 1rem 2rem" gap="1rem">
         <Stack direction="row" gap="1rem">
           <Button

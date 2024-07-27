@@ -5,7 +5,7 @@ import Stack from '@mui/material/Stack'
  * An expanded container with a cool border
  * that fades-in new children as they appear.
  */
-export default function Screen({
+export default function Theater({
   sx,
   children,
   ...props
