@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:production": "npm run build -- --mode=production",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "i18n-extract": "i18next src/**/*.js* -s -o src/i18n/locale-xx.json && json2yaml src/i18n/locale-xx.json > src/i18n/locale-xx.yaml",
     "preview": "vite preview"
@@ -21,7 +22,8 @@
     "i18next": "^23.12.2",
     "prettier": "^3.3.3",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-i18next": "^15.0.0"
   },
   "devDependencies": {
     "@rollup/plugin-dsv": "^3.0.4",
