@@ -29,6 +29,7 @@ export default function Gapminder({
   React.useEffect(()=>D3Gapminder.setXMetric && D3Gapminder.setXMetric(xMetric), [xMetric])
   React.useEffect(()=>D3Gapminder.setYMetric && D3Gapminder.setYMetric(yMetric), [yMetric])
   React.useEffect(()=>D3Gapminder.setRMetric && D3Gapminder.setRMetric(rMetric), [rMetric])
+  React.useEffect(()=>D3Gapminder.resize && D3Gapminder.resize(), [width, height])
 
   function handleResize() {
     if (!container.current) return
@@ -36,9 +37,8 @@ export default function Gapminder({
     const height = container.current.offsetHeight
     setWidth(width)
     setHeight(height)
-    console.log({ width, height })
   }
 
-  return <Box className="gapminder" ref={container} height="100%" width="100%" >
+  return <Box className="gapminder" ref={container} height="100%" width="100%" p="0" m="0" >
    </Box>
 }

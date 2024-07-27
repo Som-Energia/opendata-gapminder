@@ -232,35 +232,42 @@ Gapminder.oncreate = function(container) {
 	const y = (d) => d[self.parameters.y]
 	const radius = (d) => d[self.parameters.r]
 
-	self.width = container.offsetWidth;
-	self.height = container.offsetHeight;
+	const svg = d3.select(container).append("svg")
+		.attr("width", "100%")
+		.attr("height", "99%")
+
+	var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5};
+	self.computeSize = function() {
+		const elementWidth = svg.node().clientWidth
+		const elementHeight = svg.node().clientHeight
+		self.width = elementWidth - margin.right - margin.left;
+		self.height = elementHeight - margin.top - margin.bottom;
+	}
+	self.computeSize()
 
 	// Chart dimensions.
-	var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5};
-	var width = self.width - margin.right - margin.left;
-	var height = self.height - margin.top - margin.bottom;
 
 	// Various scales. These domains make assumptions of data, naturally.
 	var xScaleLog = d3.scaleLog()
 		.domain([1,200000])
-		.range([10, width])
+		.range([10, self.width])
 		.clamp(true)
 		;
 	var xScaleLinear = d3.scaleLinear()
 		.domain([0,200000])
-		.range([10, width])
+		.range([10, self.width])
 		.clamp(true)
 		;
 	self.xScale = xScaleLog;
 
 	var yScaleLog = d3.scaleLog()
 		.domain([1,200000])
-		.range([height, 10])
+		.range([self.height, 10])
 		.clamp(true)
 		;
 	var yScaleLinear = d3.scaleLinear()
 		.domain([0,200000])
-		.range([height, 10])
+		.range([self.height, 10])
 		.clamp(true)
 		;
 	self.yScale = yScaleLog;
@@ -284,19 +291,14 @@ Gapminder.oncreate = function(container) {
 
 	var axisLabelMargin = 6;
 
-	// Create the SVG container and set the origin.
-	var svg = d3.select(container).append("svg")
-		.attr("width", width + margin.left + margin.right)
-		.attr("height", height + margin.top + margin.bottom)
-		.attr("preserveAspectRatio", 'xMidYMin meet')
-		;
 	var view = svg.append("g")
 		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 	// Add the x-axis.
-	view.append("g")
+	var xAxisContainer = view.append("g")
 		.attr("class", "x axis")
-		.attr("transform", "translate(0," + height + ")")
+		.attr("transform", "translate(0," + self.height + ")")
+	xAxisContainer
 		.call(xAxis);
 
 	// Add the y-axis.
@@ -308,8 +310,8 @@ Gapminder.oncreate = function(container) {
 	self.xLabel = view.append("text")
 		.attr("class", "x label")
 		.attr("text-anchor", "end")
-		.attr("x", width)
-		.attr("y", height - axisLabelMargin)
+		.attr("x", self.width)
+		.attr("y", self.height - axisLabelMargin)
 		.text(OpenData.metricText(self.parameters.x));
 
 	// Add a y-axis label.
@@ -326,26 +328,26 @@ Gapminder.oncreate = function(container) {
 	var xGridAxis = d3.axisBottom()
 		.scale(xScaleLog)
 		.ticks(22, d3.format(".0s"))
-		.tickSize(-height, 0, 0)
+		.tickSize(-self.height, 0, 0)
 		.tickFormat("")
 		;
 	var xGridAxisLinear = d3.axisBottom()
 		.scale(xScaleLinear)
 		.ticks(22, d3.format(".0s"))
-		.tickSize(-height, 0, 0)
+		.tickSize(-self.height, 0, 0)
 		.tickFormat("")
 		;
 	var yGridAxis = d3.axisLeft()
 		.scale(self.yScale)
 		.ticks(22, d3.format('.0s'))
-		.tickSize(-width, 0, 0)
+		.tickSize(-self.width, 0, 0)
 		.tickFormat("")
 		;
-	view.append("g")
+	var xGridContainer = view.append("g")
 		.attr("class", "grid x")
-		.attr("transform", "translate(0," + height + ")")
+		.attr("transform", "translate(0," + self.height + ")")
+	xGridContainer
 		.call(xGridAxis)
-		;
 	view.append("g")
 		.attr("class", "grid y")
 		.call(yGridAxis)
@@ -413,15 +415,38 @@ Gapminder.oncreate = function(container) {
 
 	var currentInfo = view.append('foreignObject')
 		.attr('class', 'currentInfo')
-		.attr('x', width-200)
-		.attr('y', height-56)
+		.attr('x', self.width-200)
+		.attr('y', self.height-56)
 		.attr('width', '20em')
-		.attr('height', height/3)
+		.attr('height', self.height/3)
+		.style('display', 'none')
 		;
 	currentInfo.append('xhtml:div')
 		.attr('class', 'currentInfoContent')
 		;
 
+	self.resize = function() {
+		self.computeSize()
+		xScaleLog.range([10, self.width])
+		xScaleLinear.range([10, self.width])
+		yScaleLog.range([self.height, 10])
+		yScaleLinear.range([self.height, 10])
+		xAxisContainer
+			.attr("transform", "translate(0," + self.height + ")")
+		self.xLabel
+			.attr("x", self.width)
+			.attr("y", self.height - axisLabelMargin)
+		xGridAxis
+			.tickSize(-self.height, 0, 0)
+		xGridAxisLinear
+			.tickSize(-self.height, 0, 0)
+		yGridAxis
+			.tickSize(-self.width, 0, 0)
+		xGridContainer
+			.attr("transform", "translate(0," + self.height + ")")
+		resetXAxis(self.xScale);
+		resetYAxis(self.yScale);
+	}
 	self.setXMetric = function(metric) {
 		self.parameters.x = metric;
 		self.xLabel.text(OpenData.metricText(metric));
@@ -525,12 +550,12 @@ Gapminder.oncreate = function(container) {
 		currentInfo.style('display', 'block');
 		var coordinates = d3.pointer(ev, this);
 		var x = coordinates[0]+20;
-		if (x+infoWidth>width) {
-			x = width - infoWidth;
+		if (x+infoWidth>self.width) {
+			x = self.width - infoWidth;
 		}
 		var y = coordinates[1]+20;
-		if (y+infoHeight>height)
-			y = height - infoHeight;
+		if (y+infoHeight>self.height)
+			y = self.height - infoHeight;
 		currentInfo
 			.attr('x', x)
 			.attr('y', y)
