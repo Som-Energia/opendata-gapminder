@@ -7,8 +7,8 @@ import PlayIcon from '@mui/icons-material/PlayArrow'
 import StopIcon from '@mui/icons-material/Stop'
 import ColorModeButton from '@somenergia/somenergia-ui/ColorModeButton'
 import Loading from '@somenergia/somenergia-ui/Loading'
-import DizzyError from '@somenergia/somenergia-ui/DizzyError'
 import OpenData from '../services/opendata'
+import ErrorSplash from './ErrorSplash'
 
 function t(x) {
   return x
@@ -105,26 +105,12 @@ function Console() {
         ) : loadingOpenData === notstarted ? null : loadingOpenData === done ? (
           null
         ) : (
-          <Stack
-            direction="column"
-            height="100%"
-            width="100%"
-            justifyContent="center"
-            alignContent="center"
-            alignItems="center"
-            gap="1rem"
-            opacity="0"
-          >
-            <DizzyError />
-            <div>{loadingOpenData + ''}</div>
-            <Button
-              variant="contained"
-              color="error"
-              onClick={() => setLoadingOpenData('notstarted')}
-            >
-              {t('RELOAD_DATA')}
-            </Button>
-          </Stack>
+          <ErrorSplash
+            context={t("ERROR_WHILE_LOADING_DATA")}
+            error={""+loadingOpenData}
+            action={()=>setLoadingOpenData('notstarted')}
+            actionLabel={t('RELOAD_DATA')}
+          />
         )}
       </Stack>
       <Stack direction="row" margin="1rem 1rem 2rem" gap="1rem">
