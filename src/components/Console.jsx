@@ -9,6 +9,7 @@ import ColorModeButton from '@somenergia/somenergia-ui/ColorModeButton'
 import Loading from '@somenergia/somenergia-ui/Loading'
 import OpenData from '../services/opendata'
 import ErrorSplash from './ErrorSplash'
+import FixedToWindow from './FixedToWindow'
 import Screen from './Screen'
 
 function t(x) {
@@ -74,16 +75,7 @@ function Console() {
     setRMetric(e.target.value)
   }
   return (
-    <Stack
-      boxSizing="border-box"
-      position="fixed"
-      inset="0"
-      margin="0"
-      padding="0"
-      direction="column"
-      width="100%"
-      height="calc(100vh)"
-    >
+    <FixedToWindow>
       <Screen>
         {loadingOpenData === notstarted ? null : loadingOpenData === inprogress ? (
           <Loading />
@@ -130,7 +122,7 @@ function Console() {
           <ColorModeButton />
         </div>
       </Stack>
-    </Stack>
+    </FixedToWindow>
   )
 }
 
