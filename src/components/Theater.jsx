@@ -21,7 +21,7 @@ export default function Theater({
             `inset 0 0 .2em .2em ${theme.palette.primary.main}`,
           p: '.4em', // 2em + 2em from boxShadow
           flexGrow: 1,
-          '*': {
+          '&>*': {
             // Fade in when switching child
             animation: 'fadein 0.5s linear',
             '@keyframes fadein': { from: { opacity: 0 }, to: { opacity: 1 } },
