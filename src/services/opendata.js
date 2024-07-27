@@ -444,8 +444,7 @@ Gapminder.oncreate = function(container) {
 			.tickSize(-self.width, 0, 0)
 		xGridContainer
 			.attr("transform", "translate(0," + self.height + ")")
-		resetXAxis(self.xScale);
-		resetYAxis(self.yScale);
+		animateAxis();
 	}
 	self.setXMetric = function(metric) {
 		self.parameters.x = metric;
@@ -488,6 +487,15 @@ Gapminder.oncreate = function(container) {
 		self.xScale = scale;
 		xGridAxis.scale(self.xScale);
 		xAxis.scale(self.xScale);
+		animateAxis()
+	}
+	function resetYAxis(scale) {
+		self.yScale = scale;
+		yGridAxis.scale(self.yScale);
+		yAxis.scale(self.yScale);
+		animateAxis()
+	}
+	function animateAxis() {
 		d3.select(".axis.x")
 			.transition()
 			.call(xAxis)
@@ -496,12 +504,6 @@ Gapminder.oncreate = function(container) {
 			.transition()
 			.call(xGridAxis)
 			;
-		displayDate(self.currentDate);
-	}
-	function resetYAxis(scale) {
-		self.yScale = scale;
-		yGridAxis.scale(self.yScale);
-		yAxis.scale(self.yScale);
 		d3.select(".axis.y")
 			.transition()
 			.call(yAxis)
