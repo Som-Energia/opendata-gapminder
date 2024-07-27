@@ -9,6 +9,8 @@ export default function Gapminder({
   setXMetric,
   setYMetric,
   setRMetric,
+  playing,
+  setPlaying,
 }) {
   const container = React.useRef()
   const [width, setWidth] = React.useState(0)
@@ -22,7 +24,7 @@ export default function Gapminder({
  
   React.useEffect(()=>{
     if (D3Gapminder.api) return
-    D3Gapminder.oninit()
+    D3Gapminder.oninit(setPlaying)
     D3Gapminder.oncreate(container.current)
   },[])
 
@@ -30,6 +32,7 @@ export default function Gapminder({
   React.useEffect(()=>D3Gapminder.setYMetric && D3Gapminder.setYMetric(yMetric), [yMetric])
   React.useEffect(()=>D3Gapminder.setRMetric && D3Gapminder.setRMetric(rMetric), [rMetric])
   React.useEffect(()=>D3Gapminder.resize && D3Gapminder.resize(), [width, height])
+  React.useEffect(()=>D3Gapminder.externalPlay && D3Gapminder.externalPlay(playing), [playing])
 
   function handleResize() {
     if (!container.current) return

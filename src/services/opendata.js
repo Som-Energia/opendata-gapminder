@@ -192,7 +192,7 @@ OpenData.interpolateDate = function(date) {
 
 const Gapminder = {};
 
-Gapminder.oninit = function() {
+Gapminder.oninit = function(setPlaying) {
 	var self = this;
 	// Exposed api
 	// Usually we populate the api object provided by the parent
@@ -208,6 +208,7 @@ Gapminder.oninit = function() {
 	self.api.setY = function(metric) { self.setYMetric(metric); };
 	self.api.setR = function(metric) { self.setRMetric(metric); };
 	self.api.resetTimeAxis = function() { self.resetTimeAxis(); }
+	self.notifyPlaying=setPlaying
 	// Which data attributes map to visualization domain
 	self.parameters = {
 		x: 'members',
@@ -666,6 +667,12 @@ Gapminder.oncreate = function(container) {
 			;
 			overlay.on("mouseover", dragDate);
 		};
+		self.externalPlay = function(playing) {
+			const isPaused = view.transition().duration()<3000
+			console.log("duration", view.transition().duration())
+			if (playing && isPaused) return self.play()
+			if (!playing && !isPaused) return self.pause()
+		}
 		self.pause = function() {
 			console.log("Paused at", self.currentDate);
 			view.transition().duration(0);
@@ -675,6 +682,7 @@ Gapminder.oncreate = function(container) {
 		function dragDate() {
 			// Cancel the current transition, if any.
 			self.pause();
+			self.notifyPlaying(false)
 
 			overlay
 				.on("mouseover", mouseover)
@@ -694,6 +702,8 @@ Gapminder.oncreate = function(container) {
 				displayDate(self.dateScale.invert(d3.pointer(ev,this)[0]));
 			}
 		}
+		self.play()
+		self.notifyPlaying(true)
 	};
 	//self.pause();
 	self.loadData();

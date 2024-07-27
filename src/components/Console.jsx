@@ -87,6 +87,8 @@ function Console() {
               setXMetric,
               setYMetric,
               setRMetric,
+              playing,
+              setPlaying,
             }}
           />
         ) : (
