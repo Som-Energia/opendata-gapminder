@@ -2,7 +2,14 @@ import React from 'react'
 import Box from '@mui/material/Box'
 import OpenData, { Gapminder as D3Gapminder } from '../services/opendata'
 
-export default function Gapminder({}) {
+export default function Gapminder({
+  xMetric,
+  yMetric,
+  rMetric,
+  setXMetric,
+  setYMetric,
+  setRMetric,
+}) {
   const container = React.useRef()
   const [width, setWidth] = React.useState(0)
   const [height, setHeight] = React.useState(0)
@@ -18,6 +25,10 @@ export default function Gapminder({}) {
     D3Gapminder.oninit()
     D3Gapminder.oncreate(container.current)
   },[])
+
+  React.useEffect(()=>D3Gapminder.setXMetric && D3Gapminder.setXMetric(xMetric), [xMetric])
+  React.useEffect(()=>D3Gapminder.setYMetric && D3Gapminder.setYMetric(yMetric), [yMetric])
+  React.useEffect(()=>D3Gapminder.setRMetric && D3Gapminder.setRMetric(rMetric), [rMetric])
 
   function handleResize() {
     if (!container.current) return

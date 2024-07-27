@@ -81,7 +81,16 @@ function Console() {
         {loadingOpenData === notstarted ? null : loadingOpenData === inprogress ? (
           <Loading />
         ) : loadingOpenData === done ? (
-          <Gapminder />
+          <Gapminder
+            {...{
+              xMetric,
+              yMetric,
+              rMetric,
+              setXMetric,
+              setYMetric,
+              setRMetric,
+            }}
+          />
         ) : (
           <ErrorSplash
             context={t('ERROR_WHILE_LOADING_DATA')}
