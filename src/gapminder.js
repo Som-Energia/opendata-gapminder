@@ -42,7 +42,7 @@ OpenData.selectedPool = []; // Current geolevel's pool
 
 OpenData.loadRelativeMetrics = function() {
 	// TODO: This should be taken from API
-	const ccaaPopulationTsv = require('dsv-loader?delimiter=\t!./data/poblacio_ccaa-20140101.csv');
+	const ccaaPopulationTsv = require('dsv-loader?delimiter=\t!./data/poblacio_ccaa-20140101.tsv');
 	OpenData.population = {}
 	OpenData.populationByCCAA = OpenData.population['ccaas'] = {};
 	ccaaPopulationTsv.map(function(v) {
