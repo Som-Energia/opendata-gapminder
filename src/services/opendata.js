@@ -317,7 +317,7 @@ Gapminder.oncreate = function(container) {
 		.attr("x", self.width-legendRadius*2-2)
 		.attr("y", 0)
 		.text(OpenData.metricText(self.parameters.r));
-	view.append("circle")
+	self.rLabelIcon = view.append("circle")
 		.attr("class", "r label")
 		.attr("cx", self.width-legendRadius)
 		.attr("cy", -legendRadius)
@@ -441,6 +441,10 @@ Gapminder.oncreate = function(container) {
 			.tickSize(-self.width, 0, 0)
 		xGridContainer
 			.attr("transform", "translate(0," + self.height + ")")
+		self.rLabel
+			.attr("x", self.width-legendRadius*2-2)
+		self.rLabelIcon
+			.attr("cx", self.width-legendRadius)
 		animateAxis();
 	}
 	self.setXMetric = function(metric) {
