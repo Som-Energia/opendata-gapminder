@@ -85,9 +85,9 @@ function Console() {
       height="calc(100vh)"
     >
       <Screen>
-        {loadingOpenData === inprogress ? (
+        {loadingOpenData === notstarted ? null : loadingOpenData === inprogress ? (
           <Loading />
-        ) : loadingOpenData === notstarted ? null : loadingOpenData === done ? (
+        ) : loadingOpenData === done ? (
           null
         ) : (
           <ErrorSplash
