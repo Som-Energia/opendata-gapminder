@@ -90,7 +90,8 @@ function Console() {
           margin: 0,
           backgroundColor: "#7773",
           boxShadow: (theme)=>
-            `inset 0 0 .5em .2em${theme.palette.primary.main}`,
+            `inset 0 0 .2em .2em${theme.palette.primary.main}`,
+          p: '.4em', // 2em + 2em from boxShadow
           flexGrow: 1,
           '*': {
             // Fade in when switching child
