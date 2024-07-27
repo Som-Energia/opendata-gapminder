@@ -10,12 +10,7 @@ require('@material/typography/dist/mdc.typography.css').default;
 var yaml = require('js-yaml');
 
 function fetchyaml(uri) {
-	const apibase = (
-		process.env.DEV_OPENDATA_API?
-		'http://localhost:5001/v0.2':
-		'https://opendata.somenergia.coop/v0.2'
-	);
-
+	const apibase = import.metric.env.VITE_OPENDATA_API_URL
 	return d3.text(apibase+uri)
 		.then(response => {false && console.debug(response); return response})
 		.then(text => {false && console.debug(text); return yaml.load(text)})
@@ -785,4 +780,4 @@ window.onload = async function() {
 };
 
 
-// vim: noet ts=4 sw=4
+// vim: noet ts=2 sw=2
