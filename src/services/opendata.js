@@ -366,13 +366,6 @@ Gapminder.oncreate = function(container) {
 			self.setXLog();
 	});
 
-	view.append('line')
-		.attr('y2',0)
-		.attr('x2',0)
-		.attr('y1',10)
-		.attr('x1',10)
-		.style('stroke', 'red')
-		;
 	var timePoint = view.append('line');
 
 	// Add the date label; the value is set on transition.
