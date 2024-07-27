@@ -1,16 +1,12 @@
-'use strict';
+import * as d3 from 'd3'
+import '../gapminder.styl'
+import yaml from 'js-yaml'
+import ccaaPopulationTsv from '../data/poblacio_ccaa-20140101.tsv'
 
-var d3 = require('d3');
-var m = require('mithril');
-const _ = require('./translate');
-var css = require('./style.styl');
-require('./gapminder.styl');
-require('font-awesome/css/font-awesome.css');
-require('@material/typography/dist/mdc.typography.css').default;
-var yaml = require('js-yaml');
+const _ = (x) => x
 
 function fetchyaml(uri) {
-	const apibase = import.metric.env.VITE_OPENDATA_API_URL
+	const apibase = import.meta.env.VITE_OPENDATA_API_URL
 	return d3.text(apibase+uri)
 		.then(response => {false && console.debug(response); return response})
 		.then(text => {false && console.debug(text); return yaml.load(text)})
@@ -37,7 +33,6 @@ OpenData.selectedPool = []; // Current geolevel's pool
 
 OpenData.loadRelativeMetrics = function() {
 	// TODO: This should be taken from API
-	const ccaaPopulationTsv = require('dsv-loader?delimiter=\t!./data/poblacio_ccaa-20140101.tsv');
 	OpenData.population = {}
 	OpenData.populationByCCAA = OpenData.population['ccaas'] = {};
 	ccaaPopulationTsv.map(function(v) {
@@ -224,10 +219,6 @@ GapMinder.oninit = function(vn) {
 		key: 'code',
 		name: 'name',
 	};
-};
-
-GapMinder.view = function(vn) {
-	return m('.gapminder', vn.attrs);
 };
 
 GapMinder.oncreate = function(vn) {
@@ -676,108 +667,6 @@ GapMinder.oncreate = function(vn) {
 	self.loadData();
 };
 
-
-
-
-const Select = require('./mdc/select');
-const Button = require('./mdc/button');
-const Layout = require('./mdc/layout');
-const Row = Layout.Row;
-const Cell = Layout.Cell;
-
-const App = {};
-App.api = {};
-App.xmetric = '';
-App.ymetric = '';
-App.rmetric = '';
-App.view = function(vn) {
-	const xoptions = OpenData.metricOptions(App.xmetric);
-	const yoptions = OpenData.metricOptions(App.ymetric);
-	const roptions = OpenData.metricOptions(App.rmetric);
-	return m(Layout, [
-		m(Row, m(Cell, {span: 12}, m(GapMinder, {
-			api: App.api,
-			xmetric: App.xmetric,
-			ymetric: App.ymetric,
-			rmetric: App.rmetric,
-			style: {
-				height: '750px',
-			},
-		}))),
-		m(Row, [
-			m(Cell, {span: 3},
-				m(Button, {
-					faicon: 'play',
-					outlined: true,
-					style: {width: '50%'},
-					onclick: function() { App.api.play();},
-				},_('Play')),
-				m(Button, {
-					faicon: 'pause',
-					outlined: true,
-					style: {width: '50%'},
-					onclick: function() { App.api.pause();},
-				},_('Pause')),
-			),
-			m(Cell, {span: 3}, m(Select, {
-				label: _('Eje X'),
-				boxed: true,
-				options: xoptions,
-				required: true,
-				value: App.xmetric,
-				onchange: function(ev) {
-					var metric = ev.target.value;
-					App.xmetric = metric;
-					App.api.setX(metric);
-				},
-			})),
-			m(Cell, {span: 3}, m(Select, {
-				label: _('Eje Y'),
-				boxed: true,
-				options: yoptions,
-				required: true,
-				value: App.ymetric,
-				onchange: function(ev) {
-					var metric = ev.target.value;
-					App.ymetric = metric;
-					App.api.setY(metric);
-				},
-			})),
-			m(Cell, {span: 3}, m(Select, {
-				label: _('Radio'),
-				boxed: true,
-				options: roptions,
-				required: true,
-				value: App.rmetric,
-				onchange: function(ev) {
-					var metric = ev.target.value;
-					App.rmetric = metric;
-					App.api.setR(metric);
-				},
-			})),
-		]),
-	]);
-};
-
-var Main = {
-	view: function(vn) {
-		return m('.mdc-typography', [
-			m(App)
-		]);
-	},
-};
-
-
-window.onload = async function() {
-	await OpenData.retrieveData();
-	// Notify the application data is ready
-	App.xmetric = 'members';
-	App.ymetric = 'contracts';
-	App.rmetric = 'members_change';
-
-	var element = document.getElementById("mithril-target");
-	m.mount(element, Main);
-};
-
+export default OpenData
 
 // vim: noet ts=2 sw=2
