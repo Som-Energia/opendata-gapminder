@@ -25,11 +25,25 @@ function MetricSelector({ label, onChange, value, options }) {
 }
 
 function Console() {
+  const [loadingOpenData, setLoadingOpenData] = React.useState(false)
   const [playing, setPlaying] = React.useState(true)
   const [xMetric, setXMetric] = React.useState('')
   const [yMetric, setYMetric] = React.useState('')
   const [rMetric, setRMetric] = React.useState('')
   const [options, setOptions] = React.useState([])
+
+  React.useEffect(()=>{
+    setLoadingOpenData(true)
+    if (loadingOpenData) return // avoid double load in dev mode
+    OpenData.retrieveData().then((d)=> {
+      console.log("data loaded", d)
+      const options = OpenData.metricOptions().map(({value, text})=>({value, label: text}))
+      setOptions(options)
+      setXMetric("members")
+      setYMetric("contracts")
+      setRMetric("members_change")
+    })
+  }, [])
 
   function togglePlaying() {
     setPlaying((wasPlaying) => !wasPlaying)
