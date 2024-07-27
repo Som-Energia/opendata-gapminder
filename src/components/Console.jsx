@@ -80,24 +80,29 @@ function Console() {
       margin="0"
       padding="0"
       direction="column"
-      width="calc(100% - 2pt)"
+      width="100%"
       height="calc(100vh - 20pt)"
     >
-      <Stack direction="row" sx={{ flexGrow: 1 }}>
-        {loadingOpenData === notstarted || loadingOpenData === inprogress ? (
+      <Stack
+        direction="row"
+        width="100%"
+        sx={{
+          margin: 0,
+          backgroundColor: "#7773",
+          boxShadow: (theme)=>
+            `inset 0 0 .5em .2em${theme.palette.primary.main}`,
+          flexGrow: 1,
+          '*': {
+            // Fade in when switching child
+            animation: 'fadein 0.5s linear',
+            '@keyframes fadein': { from: { opacity: 0 }, to: { opacity: 1 } },
+          },
+        }}
+      >
+        {loadingOpenData === inprogress ? (
           <Loading />
-        ) : loadingOpenData === done ? (
-          <svg width="100%">
-            <rect
-              x="0"
-              y="0"
-              width="100%"
-              height="100%"
-              fill="#333"
-              stroke="green"
-              strokeWidth="10"
-            />
-          </svg>
+        ) : loadingOpenData === notstarted ? null : loadingOpenData === done ? (
+          null
         ) : (
           <Stack
             direction="column"
@@ -107,10 +112,15 @@ function Console() {
             alignContent="center"
             alignItems="center"
             gap="1rem"
+            opacity="0"
           >
             <DizzyError />
             <div>{loadingOpenData + ''}</div>
-            <Button variant="contained" color="error">
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => setLoadingOpenData('notstarted')}
+            >
               {t('RELOAD_DATA')}
             </Button>
           </Stack>
