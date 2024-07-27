@@ -1,3 +1,6 @@
+:root
+  --gapminder-date-color: light-dark( #cdd, #455)
+
 .gapminder
 
   width:100%
@@ -24,7 +27,7 @@
   
   .date.label
     font: 136px "Helvetica Neue"
-    fill: #cdd
+    fill: var(--gapminder-date-color)
     transition: fill .2s
   
   .year.label.active

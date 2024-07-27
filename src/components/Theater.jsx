@@ -16,7 +16,7 @@ export default function Theater({
         width="100%"
         sx={{
           margin: 0,
-          backgroundColor: "#7773",
+          backgroundColor: "#7771",
           boxShadow: (theme)=>
             `inset 0 0 .2em .2em ${theme.palette.primary.main}`,
           p: '.4em', // 2em + 2em from boxShadow
