@@ -194,20 +194,7 @@ const Gapminder = {};
 
 Gapminder.oninit = function(setPlaying) {
 	var self = this;
-	// Exposed api
-	// Usually we populate the api object provided by the parent
-	self.api = {}
-	self.api.play = function() { self.play && self.play(); };
-	self.api.replay = function() { self.replay && self.replay(); };
-	self.api.pause = function() { self.pause && self.pause(); };
-	self.api.setXLinear = function() { self.setXLinear && self.setXLinear(); };
-	self.api.setXLog = function() { self.setXLog && self.setXLog(); };
-	self.api.setYLinear = function() { self.setYLinear && self.setYLinear(); };
-	self.api.setYLog = function() { self.setYLog && self.setYLog(); };
-	self.api.setX = function(metric) { self.setXMetric(metric); };
-	self.api.setY = function(metric) { self.setYMetric(metric); };
-	self.api.setR = function(metric) { self.setRMetric(metric); };
-	self.api.resetTimeAxis = function() { self.resetTimeAxis(); }
+	self.api = true
 	self.notifyPlaying=setPlaying
 	// Which data attributes map to visualization domain
 	self.parameters = {
