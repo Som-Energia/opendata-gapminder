@@ -24,11 +24,15 @@ function MetricSelector({ label, onChange, value, options }) {
 }
 
 function Console() {
+  const [playing, setPlaying] = React.useState(true)
   const [xMetric, setXMetric] = React.useState('')
   const [yMetric, setYMetric] = React.useState('')
   const [rMetric, setRMetric] = React.useState('')
   const [options, setOptions] = React.useState([])
 
+  function togglePlaying() {
+    setPlaying((wasPlaying) => !wasPlaying)
+  }
   function handleXMetricChange(e) {
     setXMetric(e.target.value)
   }
@@ -64,8 +68,9 @@ function Console() {
       </Stack>
       <Stack direction="row" margin="1rem 1rem 2rem" gap="1rem">
         <Stack direction="row" gap="1rem">
-          <Button variant="contained" startIcon={<PlayIcon />}>{t('PLAY')}</Button>
-          <Button variant="contained" startIcon={<StopIcon />}>{t('PAUSE')}</Button>
+          <Button variant="contained" onClick={togglePlaying} startIcon={playing ? <StopIcon /> : <PlayIcon />}>
+            {playing ? t('PAUSE') : t('PLAY')}
+          </Button>
         </Stack>
         <MetricSelector
           label={t('XAXIS')}
@@ -85,7 +90,9 @@ function Console() {
           onChange={handleRMetricChange}
           options={options}
         />
-        <div><ColorModeButton /></div>
+        <div>
+          <ColorModeButton />
+        </div>
       </Stack>
     </Stack>
   )
