@@ -191,9 +191,9 @@ OpenData.interpolateDate = function(date) {
 	});
 };
 
-const GapMinder = {};
+const Gapminder = {};
 
-GapMinder.oninit = function(vn) {
+Gapminder.oninit = function(vn) {
 	var self = this;
 	// Exposed api
 	// Usually we populate the api object provided by the parent
@@ -221,7 +221,7 @@ GapMinder.oninit = function(vn) {
 	};
 };
 
-GapMinder.oncreate = function(vn) {
+Gapminder.oncreate = function(vn) {
 	var self = this;
 
 	// Mapping datum attributes to visualization domain
@@ -668,5 +668,6 @@ GapMinder.oncreate = function(vn) {
 };
 
 export default OpenData
+export {Gapminder}
 
 // vim: noet ts=2 sw=2

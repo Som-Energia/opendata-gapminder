@@ -11,6 +11,7 @@ import OpenData from '../services/opendata'
 import ErrorSplash from './ErrorSplash'
 import FixedToWindow from './FixedToWindow'
 import Theater from './Theater'
+import Gapminder from './Gapminder'
 
 function t(x) {
   return x
@@ -80,12 +81,12 @@ function Console() {
         {loadingOpenData === notstarted ? null : loadingOpenData === inprogress ? (
           <Loading />
         ) : loadingOpenData === done ? (
-          null
+          <Gapminder />
         ) : (
           <ErrorSplash
-            context={t("ERROR_WHILE_LOADING_DATA")}
-            error={""+loadingOpenData}
-            action={()=>setLoadingOpenData('notstarted')}
+            context={t('ERROR_WHILE_LOADING_DATA')}
+            error={'' + loadingOpenData}
+            action={() => setLoadingOpenData('notstarted')}
             actionLabel={t('RELOAD_DATA')}
           />
         )}
