@@ -1,10 +1,12 @@
 import React from 'react'
 import Stack from '@mui/material/Stack'
 import Button from '@mui/material/Button'
+import Fab from '@mui/material/Fab'
+import Tooltip from '@mui/material/Tooltip'
 import MenuItem from '@mui/material/MenuItem'
 import TextField from '@mui/material/TextField'
 import PlayIcon from '@mui/icons-material/PlayArrow'
-import StopIcon from '@mui/icons-material/Stop'
+import PauseIcon from '@mui/icons-material/Pause'
 import ColorModeButton from '@somenergia/somenergia-ui/ColorModeButton'
 import Loading from '@somenergia/somenergia-ui/Loading'
 import OpenData from '../services/opendata'
@@ -12,11 +14,11 @@ import ErrorSplash from './ErrorSplash'
 import FixedToWindow from './FixedToWindow'
 import Theater from './Theater'
 import Gapminder from './Gapminder'
-import {useTranslation} from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 
 function MetricSelector({ label, onChange, value, options }) {
   return (
-    <TextField select size="small" {...{ label, value, onChange }} sx={{ flex: "1 1 0"}}>
+    <TextField select size="small" {...{ label, value, onChange }} sx={{ flex: '1 1 0' }}>
       {options.map((option) => (
         <MenuItem key={option.value} value={option.value}>
           {option.label}
@@ -37,7 +39,7 @@ function Console() {
   const [yMetric, setYMetric] = React.useState('')
   const [rMetric, setRMetric] = React.useState('')
   const [options, setOptions] = React.useState([])
-  const {t} = useTranslation()
+  const { t } = useTranslation()
 
   React.useEffect(() => {
     if (loadingOpenData !== notstarted) return // avoid double load in dev mode
@@ -102,13 +104,11 @@ function Console() {
       </Theater>
       <Stack direction="row" margin="1rem 1rem max(1rem + 2%)" gap="1rem">
         <Stack direction="row" gap="1rem">
-          <Button
-            variant="contained"
-            onClick={togglePlaying}
-            startIcon={playing ? <StopIcon /> : <PlayIcon />}
-          >
-            {playing ? t('PAUSE') : t('PLAY')}
-          </Button>
+          <Tooltip title={playing ? t('PAUSE') : t('PLAY')}>
+            <Fab size="small" color="primary" onClick={togglePlaying}>
+              {playing ? <PauseIcon /> : <PlayIcon />}
+            </Fab>
+          </Tooltip>
         </Stack>
         <MetricSelector
           label={t('XAXIS')}
