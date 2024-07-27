@@ -28,7 +28,6 @@ export default function Gapminder({}) {
     console.log({ width, height })
   }
 
-  return <Box className="gapminder" ref={container} height="100%" width="100%" border="1pt solid red">
-    <Box component="span" position="absolute" top={height/2} left={width/2}>hello {width} {height}</Box>
+  return <Box className="gapminder" ref={container} height="100%" width="100%" >
    </Box>
 }

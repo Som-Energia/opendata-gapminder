@@ -64,7 +64,7 @@ OpenData.retrieveMetricData = function(metric) {
 	OpenData.metricNames[metric.id + '_per1M'] = metric.text + _(' por millón de habitantes');
 	return fetchyaml('/'+ metric.id + '/by/'+geolevel+'/monthly/from/2010-10-10?country=ES')
 		.then(metricdata => {
-			console.log("Loaded data for metric ", metric.id)
+			//console.log("Loaded data for metric ", metric.id)
 			processData(metric.id, metricdata);
 			return metricdata;
 		})
