@@ -1,0 +1,62 @@
+.gapminder
+
+  width:100%
+
+  text
+    font: 10px sans-serif
+  
+  .dot
+    stroke: #000
+    pointer-events: all
+    cursor: resize
+
+  .dot:hover
+    stroke: #a55
+    stroke-width: 2
+
+  .axis path, .axis line
+    fill: none
+    stroke: #000
+    shape-rendering: crispEdges
+  
+  .label
+    fill: #777
+  
+  .date.label
+    font: 136px "Helvetica Neue"
+    fill: #cdd
+    transition: fill .2s
+  
+  .year.label.active
+    fill: #acc
+    transition: fill .2s
+  
+  .overlay
+    fill: #cca2
+    pointer-events: all
+    cursor: ew-resize
+
+  .grid .tick
+    stroke: lightgrey
+    opacity: 0.2
+  
+  .grid path
+    stroke-width: 0
+
+
+  .axis
+    cursor: pointer
+
+  .currentInfo
+    width: 20em
+
+  .currentInfoContent
+    padding: 6pt 6pt
+    background: #eed9
+
+  .colorbox
+    padding: 0pt 10pt
+    height: 0px
+    border: 2pt solid black
+    margin: 4px
+
