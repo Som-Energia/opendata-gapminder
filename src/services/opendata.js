@@ -193,11 +193,11 @@ OpenData.interpolateDate = function(date) {
 
 const Gapminder = {};
 
-Gapminder.oninit = function(vn) {
+Gapminder.oninit = function() {
 	var self = this;
 	// Exposed api
 	// Usually we populate the api object provided by the parent
-	self.api = vn.attrs.api || {};
+	self.api = {}
 	self.api.play = function() { self.play && self.play(); };
 	self.api.replay = function() { self.replay && self.replay(); };
 	self.api.pause = function() { self.pause && self.pause(); };
@@ -221,7 +221,7 @@ Gapminder.oninit = function(vn) {
 	};
 };
 
-Gapminder.oncreate = function(vn) {
+Gapminder.oncreate = function(container) {
 	var self = this;
 
 	// Mapping datum attributes to visualization domain
@@ -232,8 +232,8 @@ Gapminder.oncreate = function(vn) {
 	const y = (d) => d[self.parameters.y]
 	const radius = (d) => d[self.parameters.r]
 
-	self.width = vn.dom.offsetWidth;
-	self.height = vn.dom.offsetHeight;
+	self.width = container.offsetWidth;
+	self.height = container.offsetHeight;
 
 	// Chart dimensions.
 	var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5};
@@ -285,7 +285,7 @@ Gapminder.oncreate = function(vn) {
 	var axisLabelMargin = 6;
 
 	// Create the SVG container and set the origin.
-	var svg = d3.select(vn.dom).append("svg")
+	var svg = d3.select(container).append("svg")
 		.attr("width", width + margin.left + margin.right)
 		.attr("height", height + margin.top + margin.bottom)
 		.attr("preserveAspectRatio", 'xMidYMin meet')
