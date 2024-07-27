@@ -317,12 +317,25 @@ Gapminder.oncreate = function(container) {
 	// Add a y-axis label.
 	self.yLabel = view.append("text")
 		.attr("class", "y label")
-		.attr("text-anchor", "end")
-		.attr("y", axisLabelMargin)
-		.attr("x", "-1em")
-		.attr("dy", ".75em")
-		.attr("transform", "rotate(-90)")
+		.attr("text-anchor", "start")
+		.attr("x", -3*margin.left/4)
+		.attr("y", 0)
 		.text(OpenData.metricText(self.parameters.y));
+
+	// Add a y-axis label.
+	const legendRadius=5
+	self.rLabel = view.append("text")
+		.attr("class", "r label")
+		.attr("text-anchor", "end")
+		.attr("x", self.width-legendRadius*2-2)
+		.attr("y", 0)
+		.text(OpenData.metricText(self.parameters.r));
+	view.append("circle")
+		.attr("fill", "none")
+		.attr("stroke", "black")
+		.attr("cx", self.width-legendRadius)
+		.attr("cy", -legendRadius)
+		.attr("r", legendRadius)
 
 	// Add grids
 	var xGridAxis = d3.axisBottom()
@@ -457,6 +470,7 @@ Gapminder.oncreate = function(container) {
 	};
 	self.setRMetric = function(metric) {
 		var [min, max] = OpenData.metricExtents[metric]??[0,100]
+		self.rLabel.text(OpenData.metricText(metric))
 		radiusScale.domain([0,max])
 		self.parameters.r = metric;
 		displayDate(self.currentDate);
