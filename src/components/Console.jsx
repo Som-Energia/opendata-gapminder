@@ -9,6 +9,7 @@ import ColorModeButton from '@somenergia/somenergia-ui/ColorModeButton'
 import Loading from '@somenergia/somenergia-ui/Loading'
 import OpenData from '../services/opendata'
 import ErrorSplash from './ErrorSplash'
+import Screen from './Screen'
 
 function t(x) {
   return x
@@ -81,25 +82,9 @@ function Console() {
       padding="0"
       direction="column"
       width="100%"
-      height="calc(100vh - 20pt)"
+      height="calc(100vh)"
     >
-      <Stack
-        direction="row"
-        width="100%"
-        sx={{
-          margin: 0,
-          backgroundColor: "#7773",
-          boxShadow: (theme)=>
-            `inset 0 0 .2em .2em${theme.palette.primary.main}`,
-          p: '.4em', // 2em + 2em from boxShadow
-          flexGrow: 1,
-          '*': {
-            // Fade in when switching child
-            animation: 'fadein 0.5s linear',
-            '@keyframes fadein': { from: { opacity: 0 }, to: { opacity: 1 } },
-          },
-        }}
-      >
+      <Screen>
         {loadingOpenData === inprogress ? (
           <Loading />
         ) : loadingOpenData === notstarted ? null : loadingOpenData === done ? (
@@ -112,7 +97,7 @@ function Console() {
             actionLabel={t('RELOAD_DATA')}
           />
         )}
-      </Stack>
+      </Screen>
       <Stack direction="row" margin="1rem 1rem 2rem" gap="1rem">
         <Stack direction="row" gap="1rem">
           <Button

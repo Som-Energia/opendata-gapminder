@@ -4,7 +4,7 @@ import DizzyError from '@somenergia/somenergia-ui/DizzyError'
 import Button from '@mui/material/Button'
 
 /**
- * Error message with a nice dizzy firefly,
+ * Error panel with a nice dizzy firefly,
  * an error message, and optional error context
  * and a button to execute an action.
  */
