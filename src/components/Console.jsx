@@ -12,10 +12,7 @@ import ErrorSplash from './ErrorSplash'
 import FixedToWindow from './FixedToWindow'
 import Theater from './Theater'
 import Gapminder from './Gapminder'
-
-function t(x) {
-  return x
-}
+import {useTranslation} from 'react-i18next'
 
 function MetricSelector({ label, onChange, value, options }) {
   return (
@@ -40,6 +37,7 @@ function Console() {
   const [yMetric, setYMetric] = React.useState('')
   const [rMetric, setRMetric] = React.useState('')
   const [options, setOptions] = React.useState([])
+  const {t} = useTranslation()
 
   React.useEffect(() => {
     if (loadingOpenData !== notstarted) return // avoid double load in dev mode

@@ -2,8 +2,7 @@ import * as d3 from 'd3'
 import '../gapminder.styl'
 import yaml from 'js-yaml'
 import ccaaPopulationTsv from '../data/poblacio_ccaa-20140101.tsv'
-
-const _ = (x) => x
+import {t} from 'i18next'
 
 function fetchyaml(uri) {
 	const apibase = import.meta.env.VITE_OPENDATA_API_URL
@@ -60,8 +59,8 @@ OpenData.retrieveMetricList = function() {
 
 OpenData.retrieveMetricData = function(metric) {
 	OpenData.metricNames[metric.id] = metric.text;
-	OpenData.metricNames[metric.id + '_change'] = _('Incremento de ') + metric.text;
-	OpenData.metricNames[metric.id + '_per1M'] = metric.text + _(' por millón de habitantes');
+	OpenData.metricNames[metric.id + '_change'] = t("INCREASE_OF_METRIC", {metric: metric.text});
+	OpenData.metricNames[metric.id + '_per1M'] = t("METRIC_PER_M_INHABITANTS", {metric: metric.text});
 	return fetchyaml('/'+ metric.id + '/by/'+geolevel+'/monthly/from/2010-10-10?country=ES')
 		.then(metricdata => {
 			//console.log("Loaded data for metric ", metric.id)
@@ -575,7 +574,7 @@ Gapminder.oncreate = function(container) {
 			colorScale(data.code)+";'></span>"+
 			data.name+
 			"</div>"+
-			"<div><b>"+_("Mes:")+"</b> "+
+			"<div><b>"+t("TOOLTIP_MONTH")+":</b> "+
 			self.currentDate.toISOString().slice(0,7)+
 			"</div>"+
 			"<div><b>"+OpenData.metricText(self.parameters.x)+":</b> "+

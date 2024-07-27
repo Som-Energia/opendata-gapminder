@@ -1,0 +1,13 @@
+ERROR_WHILE_LOADING_DATA: S'ha produït un error quan es carregaven les dades
+RELOAD_DATA: Regarrega les dades
+PAUSE: Pausa
+PLAY: Reprodueix
+STOP: Para
+XAXIS: Eix X
+YAXIS: Eix Y
+RADIUS: Radi
+TOOLTIP_MONTH: Mes
+INCREASE_OF_METRIC: Increment de {{metric}}
+METRIC_PER_M_INHABITANTS: "{{metric}} per mil·lió d'habitants"
+APP_FRAME:
+  TOGGLE_COLOR_MODE: Conmuta el mode de color

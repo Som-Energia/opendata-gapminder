@@ -1,0 +1,13 @@
+ERROR_WHILE_LOADING_DATA: Se produjo un error en la carga de datos
+RELOAD_DATA: Recarga los datos
+PAUSE: Pausa
+PLAY: Reproduce
+STOP: Para
+XAXIS: Eje X
+YAXIS: Eje Y
+RADIUS: Radio
+TOOLTIP_MONTH: Mes
+INCREASE_OF_METRIC: Increment de {{metric}}
+METRIC_PER_M_INHABITANTS: "{{metric}} per millón de habitantes"
+APP_FRAME:
+  TOGGLE_COLOR_MODE: Conmuta el modo de color
