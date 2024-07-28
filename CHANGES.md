@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.1.0 (2024-07-28)
+
+- Symlog scale to represent negative values logaritmically
+- Metric selection state as query params. Copy url to share
+  a given setup.
+- Metric selection state simplified
+
 ## 2.0.0 (2024-07-28)
 
 - First version after migrating from Mithril/MDC to React/MUI
