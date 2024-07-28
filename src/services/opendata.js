@@ -234,8 +234,36 @@ Gapminder.oncreate = function(container) {
 
 	// Chart dimensions.
 
+	// Symlog patch to ticks to workaround
+	// bug https://github.com/d3/d3-scale/issues/162
+	function fixTicks(symlogScale) {
+		symlogScale.ticks=(n)=>{
+			const d = symlogScale.domain()
+			const min = Math.min(...d)
+			const max = Math.max(...d)
+			function p(desc, x) {
+				console.log({n,desc,d,min,max, x})
+				return x
+			}
+			if (min>0 ) return p("pos", d3.scaleLog(d, [0,1]).ticks(n))
+			if (max<0) return p("neg", d3.scaleLog(d.map(x=>-x), [0,1]).ticks(n).reverse().map(x=>-x))
+			if (n===undefined) n=10
+			const negRange = min>-1? [] : d3.scaleLog([-min, 1], [0,1]).ticks(n/4).map(x=>-x).reverse()
+			const posRange = max<+1? [] : d3.scaleLog([1, max], [0,1]).ticks(n/4)
+			return p("zero", [...negRange , 0, ...posRange ])
+		}
+		symlogScale.tickFormat = (count, specifier) => {
+			return (d)=>
+				d>0? d3.scaleLog([1,Math.max(symlogScale.domain())], [0,1]).tickFormat(count, specifier)(d):
+				d<0?"-"+d3.scaleLog([-Math.min(symlogScale.domain()),1], [0,1]).tickFormat(count, specifier)(-d):
+					0
+		}
+
+		return symlogScale
+	}
+
 	// Various scales. These domains make assumptions of data, naturally.
-	var xScaleLog = d3.scaleLog()
+	var xScaleLog = fixTicks(d3.scaleSymlog())
 		.domain([1,200000])
 		.range([10, self.width])
 		.clamp(true)
@@ -247,7 +275,7 @@ Gapminder.oncreate = function(container) {
 		;
 	self.xScale = xScaleLog;
 
-	var yScaleLog = d3.scaleLog()
+	var yScaleLog = fixTicks(d3.scaleSymlog())
 		.domain([1,200000])
 		.range([self.height, 10])
 		.clamp(true)
@@ -451,7 +479,7 @@ Gapminder.oncreate = function(container) {
 		self.parameters.x = metric;
 		self.xLabel.text(OpenData.metricText(metric));
 		var [min, max] = OpenData.metricExtents[metric]??[0,100]
-		xScaleLog.domain([1,max]);
+		xScaleLog.domain([min,max]);
 		xScaleLinear.domain([min, max]);
 		resetXAxis(self.xScale);
 	};
@@ -459,7 +487,7 @@ Gapminder.oncreate = function(container) {
 		self.parameters.y = metric;
 		self.yLabel.text(OpenData.metricText(metric));
 		var [min, max] = OpenData.metricExtents[metric]??[0,100]
-		yScaleLog.domain([1,max]);
+		yScaleLog.domain([min,max]);
 		yScaleLinear.domain([min, max]);
 		resetYAxis(self.yScale);
 	};
