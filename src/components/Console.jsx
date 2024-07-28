@@ -9,7 +9,7 @@ import PlayIcon from '@mui/icons-material/PlayArrow'
 import PauseIcon from '@mui/icons-material/Pause'
 import ColorModeButton from '@somenergia/somenergia-ui/ColorModeButton'
 import Loading from '@somenergia/somenergia-ui/Loading'
-import {useSearchParams} from "react-router-dom"
+import { useSearchParams } from 'react-router-dom'
 import OpenData from '../services/opendata'
 import ErrorSplash from './ErrorSplash'
 import FixedToWindow from './FixedToWindow'
@@ -39,10 +39,7 @@ function useMyQuery() {
       return q
     })
   }
-  return [
-    Object.fromEntries(query.entries()),
-    setQueryNicer,
-  ]
+  return [Object.fromEntries(query.entries()), setQueryNicer]
 }
 
 function Console() {
@@ -52,7 +49,7 @@ function Console() {
   // Any other value is an exception
   const [loadingOpenData, setLoadingOpenData] = React.useState(notstarted)
   const [playing, setPlaying] = React.useState(true)
-  const [{x,y,r}, setSearch] = useMyQuery()
+  const [{ x, y, r }, setSearch] = useMyQuery()
   const [xMetric, setXMetric] = React.useState('')
   const [yMetric, setYMetric] = React.useState('')
   const [rMetric, setRMetric] = React.useState('')
@@ -72,8 +69,7 @@ function Console() {
         }))
         setOptions(options)
         function validOptionOr(candidate, alternative) {
-          if (options.some(({value, label})=>value===candidate))
-            return candidate
+          if (options.some(({ value, label }) => value === candidate)) return candidate
           return alternative
         }
         handleXMetricChange(validOptionOr(x, 'members'))
@@ -91,15 +87,15 @@ function Console() {
     setPlaying((wasPlaying) => !wasPlaying)
   }
   function handleXMetricChange(value) {
-    setSearch("x", value)
+    setSearch('x', value)
     setXMetric(value)
   }
   function handleYMetricChange(value) {
-    setSearch("y", value)
+    setSearch('y', value)
     setYMetric(value)
   }
   function handleRMetricChange(value) {
-    setSearch("r", value)
+    setSearch('r', value)
     setRMetric(value)
   }
   return (
@@ -137,19 +133,19 @@ function Console() {
         <MetricSelector
           label={t('XAXIS')}
           value={xMetric}
-          onChange={(e)=>handleXMetricChange(e.target.value)}
+          onChange={(e) => handleXMetricChange(e.target.value)}
           options={options}
         />
         <MetricSelector
           label={t('YAXIS')}
           value={yMetric}
-          onChange={(e)=>handleYMetricChange(e.target.value)}
+          onChange={(e) => handleYMetricChange(e.target.value)}
           options={options}
         />
         <MetricSelector
           label={t('RADIUS')}
           value={rMetric}
-          onChange={(e)=>handleRMetricChange(e.target.value)}
+          onChange={(e) => handleRMetricChange(e.target.value)}
           options={options}
         />
         <div>
