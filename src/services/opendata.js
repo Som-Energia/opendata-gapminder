@@ -242,7 +242,7 @@ Gapminder.oncreate = function(container) {
 			const min = Math.min(...d)
 			const max = Math.max(...d)
 			function p(desc, x) {
-				console.log({n,desc,d,min,max, x})
+				//console.log({n,desc,d,min,max, x})
 				return x
 			}
 			if (min>0 ) return p("pos", d3.scaleLog(d, [0,1]).ticks(n))

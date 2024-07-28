@@ -9,12 +9,15 @@ import PlayIcon from '@mui/icons-material/PlayArrow'
 import PauseIcon from '@mui/icons-material/Pause'
 import ColorModeButton from '@somenergia/somenergia-ui/ColorModeButton'
 import Loading from '@somenergia/somenergia-ui/Loading'
+import {useSearchParams} from "react-router-dom"
 import OpenData from '../services/opendata'
 import ErrorSplash from './ErrorSplash'
 import FixedToWindow from './FixedToWindow'
 import Theater from './Theater'
 import Gapminder from './Gapminder'
 import { useTranslation } from 'react-i18next'
+
+
 
 function MetricSelector({ label, onChange, value, options }) {
   return (
@@ -28,6 +31,20 @@ function MetricSelector({ label, onChange, value, options }) {
   )
 }
 
+function useMyQuery() {
+  const [query, setQuery] = useSearchParams()
+  function setQueryNicer(param, value) {
+    setQuery((q) => {
+      q.set(param, value)
+      return q
+    })
+  }
+  return [
+    Object.fromEntries(query.entries()),
+    setQueryNicer,
+  ]
+}
+
 function Console() {
   const notstarted = 'notstarted'
   const inprogress = 'inprogress'
@@ -35,10 +52,9 @@ function Console() {
   // Any other value is an exception
   const [loadingOpenData, setLoadingOpenData] = React.useState(notstarted)
   const [playing, setPlaying] = React.useState(true)
-  const [xMetric, setXMetric] = React.useState('')
-  const [yMetric, setYMetric] = React.useState('')
-  const [rMetric, setRMetric] = React.useState('')
+  const [{x,y,r}, setSearch] = useMyQuery()
   const [options, setOptions] = React.useState([])
+
   const { t } = useTranslation()
 
   React.useEffect(() => {
@@ -52,9 +68,9 @@ function Console() {
           label: text,
         }))
         setOptions(options)
-        setXMetric('members')
-        setYMetric('contracts')
-        setRMetric('members_change')
+        x || setSearch("x", 'members')
+        y || setSearch("y", 'contracts')
+        r || setSearch("r", 'members_change')
         setLoadingOpenData(done)
       })
       .catch((e) => {
@@ -67,13 +83,13 @@ function Console() {
     setPlaying((wasPlaying) => !wasPlaying)
   }
   function handleXMetricChange(e) {
-    setXMetric(e.target.value)
+    setSearch("x", e.target.value)
   }
   function handleYMetricChange(e) {
-    setYMetric(e.target.value)
+    setSearch("y", e.target.value)
   }
   function handleRMetricChange(e) {
-    setRMetric(e.target.value)
+    setSearch("r", e.target.value)
   }
   return (
     <FixedToWindow>
@@ -83,12 +99,9 @@ function Console() {
         ) : loadingOpenData === done ? (
           <Gapminder
             {...{
-              xMetric,
-              yMetric,
-              rMetric,
-              setXMetric,
-              setYMetric,
-              setRMetric,
+              xMetric: x,
+              yMetric: y,
+              rMetric: r,
               playing,
               setPlaying,
             }}
@@ -112,19 +125,19 @@ function Console() {
         </Stack>
         <MetricSelector
           label={t('XAXIS')}
-          value={xMetric}
+          value={x}
           onChange={handleXMetricChange}
           options={options}
         />
         <MetricSelector
           label={t('YAXIS')}
-          value={yMetric}
+          value={y}
           onChange={handleYMetricChange}
           options={options}
         />
         <MetricSelector
           label={t('RADIUS')}
-          value={rMetric}
+          value={r}
           onChange={handleRMetricChange}
           options={options}
         />
