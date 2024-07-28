@@ -6,9 +6,6 @@ export default function Gapminder({
   xMetric,
   yMetric,
   rMetric,
-  setXMetric,
-  setYMetric,
-  setRMetric,
   playing,
   setPlaying,
 }) {
