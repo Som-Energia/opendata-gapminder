@@ -17,7 +17,7 @@ import Theater from './Theater'
 import Gapminder from './Gapminder'
 import { useTranslation } from 'react-i18next'
 
-
+const version = import.meta.env.VITE_APP_VERSION
 
 function MetricSelector({ label, onChange, value, options }) {
   return (
@@ -122,7 +122,7 @@ function Console() {
           />
         )}
       </Theater>
-      <Stack direction="row" margin="1rem" gap="1rem">
+      <Stack direction="row" margin="1rem 1rem 0rem" gap="1rem">
         <Stack direction="row" gap="1rem">
           <Tooltip title={playing ? t('PAUSE') : t('PLAY')}>
             <Fab size="small" color="primary" onClick={togglePlaying}>
@@ -151,6 +151,15 @@ function Console() {
         <div>
           <ColorModeButton />
         </div>
+      </Stack>
+      <Stack
+        m="0 1rem"
+        direction="row"
+        justifyContent="right"
+        alignItems="center"
+        sx={{ color: 'primary.main', opacity: '60%' }}
+      >
+        <div>{version}</div>
       </Stack>
     </FixedToWindow>
   )
