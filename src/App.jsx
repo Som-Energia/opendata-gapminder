@@ -12,7 +12,9 @@ const router  = createBrowserRouter([
     path: "/",
     element: <Console />
   },
-]);
+],{
+  basename: import.meta.env.BASE_URL || null,
+});
 
 function App() {
   return (
