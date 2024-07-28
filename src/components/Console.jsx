@@ -53,6 +53,9 @@ function Console() {
   const [loadingOpenData, setLoadingOpenData] = React.useState(notstarted)
   const [playing, setPlaying] = React.useState(true)
   const [{x,y,r}, setSearch] = useMyQuery()
+  const [xMetric, setXMetric] = React.useState('')
+  const [yMetric, setYMetric] = React.useState('')
+  const [rMetric, setRMetric] = React.useState('')
   const [options, setOptions] = React.useState([])
 
   const { t } = useTranslation()
@@ -68,9 +71,14 @@ function Console() {
           label: text,
         }))
         setOptions(options)
-        x || setSearch("x", 'members')
-        y || setSearch("y", 'contracts')
-        r || setSearch("r", 'members_change')
+        function validOptionOr(candidate, alternative) {
+          if (options.some(({value, label})=>value===candidate))
+            return candidate
+          return alternative
+        }
+        handleXMetricChange(validOptionOr(x, 'members'))
+        handleYMetricChange(validOptionOr(y, 'contracts'))
+        handleRMetricChange(validOptionOr(r, 'members_change'))
         setLoadingOpenData(done)
       })
       .catch((e) => {
@@ -82,14 +90,17 @@ function Console() {
   function togglePlaying() {
     setPlaying((wasPlaying) => !wasPlaying)
   }
-  function handleXMetricChange(e) {
-    setSearch("x", e.target.value)
+  function handleXMetricChange(value) {
+    setSearch("x", value)
+    setXMetric(value)
   }
-  function handleYMetricChange(e) {
-    setSearch("y", e.target.value)
+  function handleYMetricChange(value) {
+    setSearch("y", value)
+    setYMetric(value)
   }
-  function handleRMetricChange(e) {
-    setSearch("r", e.target.value)
+  function handleRMetricChange(value) {
+    setSearch("r", value)
+    setRMetric(value)
   }
   return (
     <FixedToWindow>
@@ -99,9 +110,9 @@ function Console() {
         ) : loadingOpenData === done ? (
           <Gapminder
             {...{
-              xMetric: x,
-              yMetric: y,
-              rMetric: r,
+              xMetric,
+              yMetric,
+              rMetric,
               playing,
               setPlaying,
             }}
@@ -125,20 +136,20 @@ function Console() {
         </Stack>
         <MetricSelector
           label={t('XAXIS')}
-          value={x}
-          onChange={handleXMetricChange}
+          value={xMetric}
+          onChange={(e)=>handleXMetricChange(e.target.value)}
           options={options}
         />
         <MetricSelector
           label={t('YAXIS')}
-          value={y}
-          onChange={handleYMetricChange}
+          value={yMetric}
+          onChange={(e)=>handleYMetricChange(e.target.value)}
           options={options}
         />
         <MetricSelector
           label={t('RADIUS')}
-          value={r}
-          onChange={handleRMetricChange}
+          value={rMetric}
+          onChange={(e)=>handleRMetricChange(e.target.value)}
           options={options}
         />
         <div>
