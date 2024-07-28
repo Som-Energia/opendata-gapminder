@@ -4,8 +4,8 @@
   "version": "2.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "start": "export VITE_APP_VERSION=$(git describe --tags) && vite",
+    "build": "export VITE_APP_VERSION=$(git describe --tags) && vite build",
     "build:production": "npm run build -- --mode=production",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "i18n-extract": "i18next src/**/*.js* -s -o src/i18n/locale-xx.json && json2yaml src/i18n/locale-xx.json > src/i18n/locale-xx.yaml",
