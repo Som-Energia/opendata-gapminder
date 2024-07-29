@@ -1,6 +1,7 @@
 import React from 'react'
 import Box from '@mui/material/Box'
-import OpenData, { Gapminder as D3Gapminder } from '../services/opendata'
+import OpenData from '../services/opendata'
+import D3Gapminder from '../d3/gapminder'
 
 export default function Gapminder({
   xMetric,
